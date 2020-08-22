@@ -17,7 +17,7 @@ class LocalHistoryPlugin(object):
         self._lock = Lock()
         self._executor = ExecutorService()
         init_log(self._nvim)
-        load_settings(self._nvim)
+        self._settings = load_settings(self._nvim)
 
     def _submit(self, coro: Awaitable[None]) -> None:
         loop: AbstractEventLoop = self._nvim.loop
@@ -35,10 +35,10 @@ class LocalHistoryPlugin(object):
     def _run(self, func: Callable[..., Awaitable[None]], *args: Any) -> None:
         async def run() -> None:
             async with self._lock:
-                await func(self._nvim, *args)
+                await func(self._nvim, self._settings, *args)
 
         self._submit(run())
 
     @pynvim.autocmd('BufWritePost', pattern='*', eval='expand(\'%:p\')')
-    def on_buffer_write_post(self, path: str):
-        self._run(local_history_save, path)
+    def on_buffer_write_post(self, file_path: str):
+        self._run(local_history_save, file_path)
