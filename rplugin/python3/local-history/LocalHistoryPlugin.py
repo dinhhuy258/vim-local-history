@@ -18,7 +18,7 @@ class LocalHistoryPlugin(object):
     def _submit(self, coro: Awaitable[None]) -> None:
         loop: AbstractEventLoop = self._nvim.loop
 
-        def func(nvim: pynvim.Nvim) -> None:
+        def submit(nvim: pynvim.Nvim) -> None:
             future = run_coroutine_threadsafe(coro, loop)
 
             try:
@@ -26,15 +26,14 @@ class LocalHistoryPlugin(object):
             except Exception as e:
                 nvim.async_call(nvim.out_write, str(e))
 
-        self._executor.run_sync(func, self._nvim)
+        self._executor.run_sync(submit, self._nvim)
 
-    def _run(self, func: Callable[..., Awaitable[None]], *args: Any,
-             **kwargs: Any) -> None:
-        async def func() -> None:
+    def _run(self, func: Callable[..., Awaitable[None]], *args: Any) -> None:
+        async def run() -> None:
             async with self._lock:
-                await print_nvim_msg(self._nvim, 'Hello world!!!')
+                await func(self._nvim, *args)
 
-        self._submit(func())
+        self._submit(run())
 
     @pynvim.autocmd('BufWritePost', pattern='*', eval='expand(\'%:p\')')
     def on_buffer_write_post(self, path):
