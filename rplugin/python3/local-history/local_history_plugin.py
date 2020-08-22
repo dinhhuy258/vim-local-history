@@ -7,7 +7,7 @@ from .logging import log, init_log
 from .nvim import print_nvim_msg
 from .local_history import local_history_save
 from .settings import load_settings
-from .ExecutorService import ExecutorService
+from .executor_service import ExecutorService
 
 
 @pynvim.plugin

@@ -1,1 +1,1 @@
-from .LocalHistoryPlugin import LocalHistoryPlugin
+from .local_history_plugin import LocalHistoryPlugin
