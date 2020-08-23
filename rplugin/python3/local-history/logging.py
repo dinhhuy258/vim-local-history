@@ -10,7 +10,7 @@ time:     {asctime}
 module:   {module}
 line:     {lineno}
 function: {funcName}
-message:  {message}
+{message}
 """
 
 
