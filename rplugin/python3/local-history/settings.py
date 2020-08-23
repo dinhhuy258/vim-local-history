@@ -1,4 +1,5 @@
 import pynvim
+import os
 from dataclasses import dataclass
 
 
@@ -11,6 +12,9 @@ class Settings:
 
 def load_settings(nvim: pynvim.Nvim) -> Settings:
     local_history_path = nvim.eval('g:local_history_path')
+    if not local_history_path.startswith(os.path.expanduser("~")):
+        local_history_path = os.path.join(os.getcwd(), local_history_path)
+
     local_history_max_display = nvim.eval('g:local_history_max_display')
     local_history_save_delay = nvim.eval('g:local_history_save_delay')
 
