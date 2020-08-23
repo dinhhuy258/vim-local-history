@@ -5,6 +5,7 @@ from typing import Any, Awaitable, Callable, Optional, Sequence
 
 from .logging import log, init_log
 from .local_history import local_history_save
+from .local_history_renderer import local_history_toggle
 from .settings import load_settings
 from .executor_service import ExecutorService
 
@@ -41,3 +42,7 @@ class LocalHistoryPlugin(object):
     @pynvim.autocmd('BufWritePost', pattern='*', eval='expand(\'%:p\')')
     def on_buffer_write_post(self, file_path: str):
         self._run(local_history_save, file_path)
+
+    @pynvim.command('LocalHistoryToggle')
+    def local_history_toggle_command(self):
+        self._run(local_history_toggle)
