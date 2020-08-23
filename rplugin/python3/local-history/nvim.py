@@ -2,11 +2,17 @@ from pynvim import Nvim
 from pynvim.api.window import Window
 from pynvim.api.buffer import Buffer
 from pynvim.api.tabpage import Tabpage
+from enum import Enum
 from asyncio import Future
 from os import linesep
 from typing import Any, Awaitable, Callable, TypeVar, Sequence, Tuple, Iterator
 
 T = TypeVar("T")
+
+
+class WindowLayout(Enum):
+    LEFT = 1
+    BELOW = 2
 
 
 def call_nvim(nvim: Nvim, func: Callable[[], T]) -> Awaitable[T]:
@@ -29,10 +35,6 @@ def get_current_buffer_name(nvim: Nvim) -> str:
     buffer_name = nvim.api.buf_get_name(buffer)
 
     return buffer_name
-
-
-def is_buf_visilbe(nvim: Nvim, buf_name: str) -> bool:
-    return int(nvim.api.eval(bufwinnr(bufnr(buf_name)))) != -1
 
 
 def get_current_win() -> Window:
@@ -61,18 +63,25 @@ def find_windows_in_tab(nvim: Nvim) -> Iterator[Window]:
             yield window
 
 
-def create_window(nvim: Nvim, width: int) -> Window:
+def create_window(nvim: Nvim, size: int, layout: WindowLayout) -> Window:
     split_right = nvim.api.get_option("splitright")
+    split_below = nvim.api.get_option("splitbelow")
 
     windows: Sequence[Window] = tuple(window
                                       for window in find_windows_in_tab(nvim))
 
     focus_win = windows[0]
 
-    nvim.api.set_option("splitright", False)
     nvim.api.set_current_win(focus_win)
-    nvim.command(f"{width}vsplit")
+    if layout is WindowLayout.LEFT:
+        nvim.api.set_option("splitright", False)
+        nvim.command(f"{size}vsplit")
+    else:
+        nvim.api.set_option("splitbelow", True)
+        nvim.command(f"{size}split")
+
     nvim.api.set_option("splitright", split_right)
+    nvim.api.set_option("splitbelow", split_below)
 
     window: Window = nvim.api.get_current_win()
     return window
@@ -84,3 +93,7 @@ def win_set_buf(nvim: Nvim, window: Window, buffer: Buffer) -> None:
 
 def command(cmd: str) -> None:
     nvim.api.command(cmd)
+
+
+def set_current_win(nvim: Nvim, window: Window) -> None:
+    nvim.api.set_current_win(window)
