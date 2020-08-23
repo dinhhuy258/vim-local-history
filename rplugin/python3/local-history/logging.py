@@ -1,5 +1,5 @@
 import pynvim
-from logging import Formatter, Handler, LogRecord, ERROR, WARN, getLogger
+from logging import Formatter, Handler, LogRecord, ERROR, INFO, getLogger
 
 _LOGGER_NAME = 'VimLocalHistory'
 
@@ -28,7 +28,7 @@ def init_log(nvim: pynvim.Nvim) -> None:
 
     logger = getLogger(_LOGGER_NAME)
     logger.addHandler(handler)
-    logger.setLevel(WARN)
+    logger.setLevel(INFO)
 
 
 log = getLogger(_LOGGER_NAME)

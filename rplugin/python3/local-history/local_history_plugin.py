@@ -4,7 +4,6 @@ from asyncio import AbstractEventLoop, Lock, run_coroutine_threadsafe
 from typing import Any, Awaitable, Callable, Optional, Sequence
 
 from .logging import log, init_log
-from .nvim import print_nvim_msg
 from .local_history import local_history_save
 from .settings import load_settings
 from .executor_service import ExecutorService
