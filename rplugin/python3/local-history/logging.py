@@ -1,4 +1,4 @@
-import pynvim
+from pynvim import Nvim
 from logging import Formatter, Handler, LogRecord, ERROR, INFO, getLogger
 
 _LOGGER_NAME = 'VimLocalHistory'
@@ -14,7 +14,7 @@ function: {funcName}
 """
 
 
-def init_log(nvim: pynvim.Nvim) -> None:
+def init_log(nvim: Nvim) -> None:
     class NvimHandler(Handler):
         def handle(self, log_record: LogRecord) -> None:
             message = self.format(log_record)

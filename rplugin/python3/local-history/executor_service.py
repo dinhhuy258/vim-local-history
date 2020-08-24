@@ -1,4 +1,3 @@
-import pynvim
 from queue import SimpleQueue
 from threading import Thread
 from concurrent.futures import Future
