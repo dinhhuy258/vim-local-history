@@ -20,7 +20,7 @@ def init_nvim(nvim: Nvim) -> None:
     _nvim = nvim
 
 
-def call_nvim(func: Callable[[], T]) -> Awaitable[T]:
+def async_call(func: Callable[[], T]) -> Awaitable[T]:
     future: Future = Future()
 
     def run() -> None:
@@ -35,14 +35,7 @@ def call_nvim(func: Callable[[], T]) -> Awaitable[T]:
     return future
 
 
-def get_current_buffer_name() -> str:
-    buffer = _nvim.api.get_current_buf()
-    buffer_name = _nvim.api.buf_get_name(buffer)
-
-    return buffer_name
-
-
-def get_current_win() -> Window:
+def get_current_windown() -> Window:
     return _nvim.api.get_current_win()
 
 
@@ -92,15 +85,27 @@ def create_window(size: int, layout: WindowLayout) -> Window:
     return window
 
 
-def win_set_buf(window: Window, buffer: Buffer) -> None:
+def close_window(window: Window, force: bool) -> None:
+    _nvim.api.win_close(window, force)
+
+
+def get_buffer_option(buffer: Buffer, option: str) -> str:
+    return _nvim.api.buf_get_option(buffer, option)
+
+
+def set_buffer_in_window(window: Window, buffer: Buffer) -> None:
     _nvim.api.win_set_buf(window, buffer)
+
+
+def get_buffer_in_window(window: Window) -> Buffer:
+    return _nvim.api.win_get_buf(window)
 
 
 def command(cmd: str) -> None:
     _nvim.api.command(cmd)
 
 
-def set_current_win(window: Window) -> None:
+def set_current_window(window: Window) -> None:
     _nvim.api.set_current_win(window)
 
 
