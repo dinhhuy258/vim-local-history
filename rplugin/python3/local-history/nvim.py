@@ -5,7 +5,7 @@ from pynvim.api.tabpage import Tabpage
 from enum import Enum
 from asyncio import Future
 from os import linesep
-from typing import Any, Awaitable, Callable, TypeVar, Sequence, Tuple, Iterator
+from typing import Any, Awaitable, Callable, TypeVar, Sequence, Tuple, Iterator, Optional
 
 T = TypeVar("T")
 
@@ -97,3 +97,10 @@ def command(cmd: str) -> None:
 
 def set_current_win(nvim: Nvim, window: Window) -> None:
     nvim.api.set_current_win(window)
+
+
+def get_global_var(nvim: Nvim, name: str) -> Optional[str]:
+    try:
+        return nvim.api.get_var(name)
+    except:
+        return None
