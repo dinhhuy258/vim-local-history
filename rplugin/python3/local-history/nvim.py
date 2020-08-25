@@ -1,11 +1,21 @@
 from pynvim import Nvim
+from pynvim.api.common import NvimError
 from pynvim.api.window import Window
 from pynvim.api.buffer import Buffer
 from pynvim.api.tabpage import Tabpage
 from enum import Enum
 from asyncio import Future
 from os import linesep
-from typing import Any, Awaitable, Callable, TypeVar, Sequence, Tuple, Iterator, Optional
+from typing import (
+    Any,
+    Awaitable,
+    Callable,
+    TypeVar,
+    Sequence,
+    Tuple,
+    Iterator,
+    Optional,
+)
 
 T = TypeVar("T")
 
@@ -18,6 +28,14 @@ class WindowLayout(Enum):
 def init_nvim(nvim: Nvim) -> None:
     global _nvim
     _nvim = nvim
+
+
+def call_atomic(*instructions: Tuple[str, Sequence[Any]]) -> None:
+    inst = tuple(
+        (f"{instruction}", args) for instruction, args in instructions)
+    out, error = nvim.api.call_atomic(inst)
+    if error:
+        raise NvimError(error)
 
 
 def async_call(func: Callable[[], T]) -> Awaitable[T]:
@@ -35,7 +53,7 @@ def async_call(func: Callable[[], T]) -> Awaitable[T]:
     return future
 
 
-def get_current_windown() -> Window:
+def get_current_window() -> None:
     return _nvim.api.get_current_win()
 
 
@@ -89,6 +107,10 @@ def close_window(window: Window, force: bool) -> None:
     _nvim.api.win_close(window, force)
 
 
+def get_window_option(window: Window, option: str) -> str:
+    return _nvim.api.win_get_option(window, option)
+
+
 def get_buffer_option(buffer: Buffer, option: str) -> str:
     return _nvim.api.buf_get_option(buffer, option)
 
@@ -99,6 +121,14 @@ def set_buffer_in_window(window: Window, buffer: Buffer) -> None:
 
 def get_buffer_in_window(window: Window) -> Buffer:
     return _nvim.api.win_get_buf(window)
+
+
+def get_current_buffer() -> Buffer:
+    return _nvim.api.get_current_buf()
+
+
+def get_buffer_name(buffer: Buffer) -> str:
+    return _nvim.api.buf_get_name(buffer)
 
 
 def command(cmd: str) -> None:
