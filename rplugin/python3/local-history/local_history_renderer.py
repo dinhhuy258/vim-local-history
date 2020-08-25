@@ -1,6 +1,7 @@
 from pynvim.api.buffer import Buffer
 from pynvim.api.window import Window
 from typing import Optional, Iterator
+from .local_history import get_local_history_changes, LocalHistoryChange
 from .settings import Settings
 from .logging import log
 from .nvim import (
@@ -49,20 +50,22 @@ def _is_buffer_valid(buffer: Buffer) -> str:
 
 
 async def local_history_toggle(settings: Settings) -> None:
-    def func() -> None:
+    def _toggle() -> Optional[str]:
         windows: Iterator[Window] = _find_local_history_windows_in_tab()
         local_history_opened = False
         for window in windows:
             close_window(window, True)
             local_history_opened = True
 
-        if not local_history_opened:
+        if local_history_opened:
+            return
+        else:
             buffer = get_current_buffer()
             if not _is_buffer_valid(buffer):
                 log.info(
                     '[vim-local-history] Current buffer is not a valid target for vim-local-history'
                 )
-                return
+                return None
 
             current_file_path = get_buffer_name(buffer)
             log.info(current_file_path)
@@ -79,4 +82,17 @@ async def local_history_toggle(settings: Settings) -> None:
 
             set_current_window(window)
 
-    await async_call(func)
+            return current_file_path
+
+    file_path = await async_call(_toggle)
+
+    if not file_path:
+        return
+
+    local_history_changes: Iterator[
+        LocalHistoryChange] = await get_local_history_changes(
+            settings, file_path)
+    if local_history_changes is None or not any(local_history_changes):
+        log.info('[vim-local-history] Local history is empty')
+    else:
+        log.info('[vim-local-history] Local history is not empty')
