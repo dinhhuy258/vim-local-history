@@ -2,7 +2,7 @@ from pynvim.api.buffer import Buffer
 from pynvim.api.window import Window
 from typing import Optional, Iterator
 from functools import partial
-from .local_history_storage import LocalHistoryStorage, LocalHistoryChange
+from .storage import LocalHistoryStorage, LocalHistoryChange
 from .settings import Settings
 from .logging import log
 from .utils import create_folder_if_not_present, run_in_executor
