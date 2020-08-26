@@ -111,7 +111,7 @@ async def local_history_toggle(settings: Settings) -> None:
     index = 1
     for change in changes:
         local_history_changes[index] = change
-        ++index
+        index = index + 1
 
     graph = await run_in_executor(
         partial(build_graph_log, local_history_changes))
