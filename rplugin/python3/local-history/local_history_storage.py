@@ -5,8 +5,7 @@ from dataclasses import dataclass
 from hashlib import md5
 from typing import Iterator
 from .settings import Settings
-from .file import get_file_content
-from .compression import compress, decompress
+from .utils import get_file_content, compress, decompress
 
 _LOCAL_HISTORY_HEADER = 'header'
 

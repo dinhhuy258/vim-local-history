@@ -5,8 +5,7 @@ from functools import partial
 from .local_history_storage import LocalHistoryStorage, LocalHistoryChange
 from .settings import Settings
 from .logging import log
-from .asynchronous import run_in_executor
-from .file import create_folder_if_not_present
+from .utils import create_folder_if_not_present, run_in_executor
 from .nvim import (
     async_call,
     create_buffer,
