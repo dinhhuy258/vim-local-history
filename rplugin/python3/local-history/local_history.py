@@ -1,5 +1,6 @@
 from pynvim.api.buffer import Buffer
 from pynvim.api.window import Window
+from collections import OrderedDict
 from typing import Optional, Iterator
 from functools import partial
 from .storage import LocalHistoryStorage, LocalHistoryChange
@@ -79,7 +80,6 @@ async def local_history_toggle(settings: Settings) -> None:
                 return None
 
             current_file_path = get_buffer_name(buffer)
-            log.info(current_file_path)
 
             buffer = create_buffer(_LOCAL_HISTORY_FILE_TYPE)
             window = create_window(settings.local_history_width,
@@ -101,10 +101,10 @@ async def local_history_toggle(settings: Settings) -> None:
         return
 
     local_history_storage = LocalHistoryStorage(settings, file_path)
-    local_history_changes: Iterator[
-        LocalHistoryChange] = await run_in_executor(
+    local_history_changes = await run_in_executor(
             partial(local_history_storage.get_changes))
-    if local_history_changes is None or not any(local_history_changes):
-        log.info('[vim-local-history] Local history is empty')
-    else:
-        log.info('[vim-local-history] Local history is not empty')
+    changes = OrderedDict()
+    for change in local_history_changes:
+        changes[change.change_id] = change
+
+
