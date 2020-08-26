@@ -33,7 +33,7 @@ def init_nvim(nvim: Nvim) -> None:
 def call_atomic(*instructions: Tuple[str, Sequence[Any]]) -> None:
     inst = tuple(
         (f"{instruction}", args) for instruction, args in instructions)
-    out, error = nvim.api.call_atomic(inst)
+    out, error = _nvim.api.call_atomic(inst)
     if error:
         raise NvimError(error)
 
@@ -121,6 +121,16 @@ def set_buffer_in_window(window: Window, buffer: Buffer) -> None:
 
 def get_buffer_in_window(window: Window) -> Buffer:
     return _nvim.api.win_get_buf(window)
+
+
+def find_window_and_buffer_by_file_type(
+        file_type: str) -> Optional[Tuple[Window, Buffer]]:
+    for window in _nvim.api.list_wins():
+        buffer: Buffer = _nvim.api.win_get_buf(window)
+        if file_type == _nvim.api.buf_get_option(buffer, "filetype"):
+            return window, buffer
+
+    return None
 
 
 def get_current_buffer() -> Buffer:

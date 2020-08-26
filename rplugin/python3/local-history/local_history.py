@@ -1,14 +1,16 @@
 from pynvim.api.buffer import Buffer
 from pynvim.api.window import Window
 from collections import OrderedDict
-from typing import Optional, Iterator
+from typing import Optional, Iterator, Tuple, Sequence, Any
 from functools import partial
+from .graph_log import build_graph_log
 from .storage import LocalHistoryStorage, LocalHistoryChange
 from .settings import Settings
 from .logging import log
 from .utils import create_folder_if_not_present, run_in_executor
 from .nvim import (
     async_call,
+    call_atomic,
     create_buffer,
     create_window,
     close_window,
@@ -21,6 +23,7 @@ from .nvim import (
     get_current_buffer,
     get_current_window,
     get_buffer_name,
+    find_window_and_buffer_by_file_type,
     WindowLayout,
 )
 
@@ -62,6 +65,8 @@ async def local_history_save(settings: Settings, file_path: str) -> None:
 
 
 async def local_history_toggle(settings: Settings) -> None:
+    global local_history_changes
+
     def _toggle() -> Optional[str]:
         windows: Iterator[Window] = _find_local_history_windows_in_tab()
         local_history_opened = False
@@ -101,10 +106,27 @@ async def local_history_toggle(settings: Settings) -> None:
         return
 
     local_history_storage = LocalHistoryStorage(settings, file_path)
-    local_history_changes = await run_in_executor(
-            partial(local_history_storage.get_changes))
-    changes = OrderedDict()
-    for change in local_history_changes:
-        changes[change.change_id] = change
+    changes = await run_in_executor(partial(local_history_storage.get_changes))
+    local_history_changes = OrderedDict()
+    index = 1
+    for change in changes:
+        local_history_changes[index] = change
+        ++index
 
+    graph = await run_in_executor(
+        partial(build_graph_log, local_history_changes))
 
+    def _render_local_history_tree():
+        window, buffer = find_window_and_buffer_by_file_type(
+            _LOCAL_HISTORY_FILE_TYPE)
+
+        def _buf_set_lines(buffer: Buffer,
+                           lines: list) -> Iterator[Tuple[str, Sequence[Any]]]:
+            yield "nvim_buf_set_option", (buffer, "modifiable", True)
+            yield "nvim_buf_set_lines", (buffer, 0, -1, True, graph)
+            yield "nvim_buf_set_option", (buffer, "modifiable", False)
+
+        instruction = _buf_set_lines(buffer, graph)
+        call_atomic(*instruction)
+
+    await async_call(_render_local_history_tree)
