@@ -5,8 +5,7 @@ from typing import Any, Awaitable, Callable, Optional, Sequence
 
 from .nvim import init_nvim
 from .logging import log, init_log
-from .local_history import local_history_save
-from .local_history_renderer import local_history_toggle
+from .local_history import local_history_save, local_history_toggle
 from .settings import load_settings
 from .executor_service import ExecutorService
 

@@ -10,10 +10,6 @@ def get_file_content(file_path: str) -> str:
     return content
 
 
-def is_file_exists(file_path: str) -> bool:
-    return path.exists(file_path) and path.isfile(file_path)
-
-
 def is_folder_exists(folder_path: str) -> bool:
     return path.exists(folder_path) and path.isdir(folder_path)
 
