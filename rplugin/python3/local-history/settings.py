@@ -14,7 +14,11 @@ _DEFAULT_LOCAL_HISTORY_WIDTH = 45
 
 _DEFAULT_LOCAL_HISTORY_PREVIEW_HEIGHT = 15
 
-_DEFAULT_LOCAL_HISTORY_MAPPINGS = {'q': 'quit'}
+_DEFAULT_LOCAL_HISTORY_MAPPINGS = {
+    'q': 'quit',
+    'j': 'move_older',
+    'k': 'move_newer'
+}
 
 
 @dataclass(frozen=True)

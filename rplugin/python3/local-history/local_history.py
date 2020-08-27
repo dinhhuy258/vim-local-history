@@ -24,6 +24,10 @@ from .nvim import (
     get_current_window,
     get_buffer_name,
     find_window_and_buffer_by_file_type,
+    get_current_cursor,
+    set_cursor,
+    get_line_count,
+    get_line,
     WindowLayout,
 )
 
@@ -65,6 +69,32 @@ def _close_local_history_windows() -> bool:
     return closed_local_history_windows
 
 
+async def local_history_move(settings: Settings, direction: int) -> None:
+    def _local_history_move() -> None:
+        window = get_current_window()
+        buffer = get_buffer_in_window(window)
+        row, _ = get_current_cursor(window)
+        line_count = get_line_count(buffer)
+
+        new_row = row + direction * 2
+
+        if new_row < 1:
+            new_row = 1
+        elif new_row > line_count:
+            new_row = line_count
+
+        new_row_line = get_line(buffer, new_row)
+        if not new_row_line:
+            return
+
+        if new_row_line[0] == '|':
+            # If we're in between two nodes
+            new_row = new_row - direction
+        set_cursor(window, (new_row, 0))
+
+    await async_call(_local_history_move)
+
+
 async def local_history_quit(settings: Settings) -> None:
     await async_call(_close_local_history_windows)
 
@@ -97,7 +127,8 @@ async def local_history_toggle(settings: Settings) -> None:
 
             current_file_path = get_buffer_name(buffer)
 
-            buffer = create_buffer(_LOCAL_HISTORY_FILE_TYPE, settings.local_history_mappings)
+            buffer = create_buffer(_LOCAL_HISTORY_FILE_TYPE,
+                                   settings.local_history_mappings)
             window = create_window(settings.local_history_width,
                                    WindowLayout.LEFT)
             set_buffer_in_window(window, buffer)

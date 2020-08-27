@@ -11,6 +11,7 @@ from .local_history import (
     local_history_save,
     local_history_toggle,
     local_history_quit,
+    local_history_move,
 )
 
 
@@ -55,3 +56,11 @@ class LocalHistoryPlugin(object):
     @function('LocalHistory_quit')
     def quit(self, args: Sequence[Any]) -> None:
         self._run(local_history_quit)
+
+    @function('LocalHistory_move_older')
+    def move_older(self, args: Sequence[Any]) -> None:
+        self._run(local_history_move, 1)
+
+    @function('LocalHistory_move_newer')
+    def move_newer(self, args: Sequence[Any]) -> None:
+        self._run(local_history_move, -1)

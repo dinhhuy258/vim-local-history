@@ -115,6 +115,27 @@ def get_window_option(window: Window, option: str) -> str:
     return _nvim.api.win_get_option(window, option)
 
 
+def set_cursor(window: Window, cursor: Tuple[int, int]) -> None:
+    _nvim.api.win_set_cursor(window, cursor)
+
+
+def get_current_cursor(window: Window) -> Tuple[int, int]:
+    return _nvim.api.win_get_cursor(window)
+
+
+def get_line_count(buffer: Buffer) -> int:
+    return _nvim.api.buf_line_count(buffer)
+
+
+from .logging import log
+
+
+def get_line(buffer: Buffer, row: int) -> Optional[str]:
+    lines = _nvim.api.buf_get_lines(buffer, row - 1, row, False)
+
+    return None if not lines else lines[0]
+
+
 def get_buffer_option(buffer: Buffer, option: str) -> str:
     return _nvim.api.buf_get_option(buffer, option)
 
