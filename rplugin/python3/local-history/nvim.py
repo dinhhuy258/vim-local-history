@@ -15,6 +15,7 @@ from typing import (
     Tuple,
     Iterator,
     Optional,
+    Dict,
 )
 
 T = TypeVar("T")
@@ -57,11 +58,14 @@ def get_current_window() -> None:
     return _nvim.api.get_current_win()
 
 
-def create_buffer(file_type: str) -> Buffer:
+def create_buffer(file_type: str, keymaps: Dict[str, str] = dict()) -> Buffer:
     options = {"noremap": True, "silent": True, "nowait": True}
     buffer: Buffer = _nvim.api.create_buf(False, True)
     _nvim.api.buf_set_option(buffer, "modifiable", False)
     _nvim.api.buf_set_option(buffer, "filetype", file_type)
+    for mapping, function in keymaps.items():
+        _nvim.api.buf_set_keymap(buffer, "n", mapping,
+                                 f"<cmd>call {function}(v:false)<cr>", options)
 
     return buffer
 
@@ -149,7 +153,7 @@ def set_current_window(window: Window) -> None:
     _nvim.api.set_current_win(window)
 
 
-def get_global_var(name: str) -> Optional[str]:
+def get_global_var(name: str) -> Optional[Any]:
     try:
         return _nvim.api.get_var(name)
     except:

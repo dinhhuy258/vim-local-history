@@ -1,13 +1,17 @@
 import threading
-from pynvim import Nvim, plugin, command, autocmd
+from pynvim import Nvim, plugin, command, autocmd, function
 from asyncio import AbstractEventLoop, Lock, run_coroutine_threadsafe
 from typing import Any, Awaitable, Callable, Optional, Sequence
 
 from .nvim import init_nvim
 from .logging import log, init_log
-from .local_history import local_history_save, local_history_toggle
 from .settings import load_settings
 from .executor_service import ExecutorService
+from .local_history import (
+    local_history_save,
+    local_history_toggle,
+    local_history_quit,
+)
 
 
 @plugin
@@ -41,9 +45,13 @@ class LocalHistoryPlugin(object):
         self._submit(run())
 
     @autocmd('BufWritePost', pattern='*', eval='expand(\'%:p\')')
-    def on_buffer_write_post(self, file_path: str):
+    def on_buffer_write_post(self, file_path: str) -> None:
         self._run(local_history_save, file_path)
 
     @command('LocalHistoryToggle')
-    def local_history_toggle_command(self):
+    def local_history_toggle_command(self) -> None:
         self._run(local_history_toggle)
+
+    @function('LocalHistory_quit')
+    def quit(self, args: Sequence[Any]) -> None:
+        self._run(local_history_quit)

@@ -9,8 +9,9 @@ _AGE_SCALES = [("yr", 3600 * 24 * 365), ("mon", 3600 * 24 * 30),
 def build_graph_log(changes: OrderedDict) -> list:
     lines = []
     for index, change in changes.items():
-        lines.append('  |')
-        line = '  o  [%d] %-10s' % (index, _calculate_age(change.timestamp))
+        line = 'o  [%d] %-10s' % (index, _calculate_age(change.timestamp))
+        if (len(lines) >= 1):
+            lines.append('|')
         lines.append(line)
 
     lines.reverse()

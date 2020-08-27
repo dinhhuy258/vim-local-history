@@ -55,6 +55,20 @@ def _is_buffer_valid(buffer: Buffer) -> str:
         window, 'previewwindow')
 
 
+def _close_local_history_windows() -> bool:
+    windows: Iterator[Window] = _find_local_history_windows_in_tab()
+    closed_local_history_windows = False
+    for window in windows:
+        close_window(window, True)
+        closed_local_history_windows = True
+
+    return closed_local_history_windows
+
+
+async def local_history_quit(settings: Settings) -> None:
+    await async_call(_close_local_history_windows)
+
+
 async def local_history_save(settings: Settings, file_path: str) -> None:
     await run_in_executor(
         partial(create_folder_if_not_present, settings.local_history_path))
@@ -69,12 +83,9 @@ async def local_history_toggle(settings: Settings) -> None:
 
     def _toggle() -> Optional[str]:
         windows: Iterator[Window] = _find_local_history_windows_in_tab()
-        local_history_opened = False
-        for window in windows:
-            close_window(window, True)
-            local_history_opened = True
+        closed_local_history_windows = _close_local_history_windows()
 
-        if local_history_opened:
+        if closed_local_history_windows:
             return
         else:
             buffer = get_current_buffer()
@@ -86,7 +97,7 @@ async def local_history_toggle(settings: Settings) -> None:
 
             current_file_path = get_buffer_name(buffer)
 
-            buffer = create_buffer(_LOCAL_HISTORY_FILE_TYPE)
+            buffer = create_buffer(_LOCAL_HISTORY_FILE_TYPE, settings.local_history_mappings)
             window = create_window(settings.local_history_width,
                                    WindowLayout.LEFT)
             set_buffer_in_window(window, buffer)
