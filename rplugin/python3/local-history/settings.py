@@ -19,6 +19,8 @@ _DEFAULT_LOCAL_HISTORY_MAPPINGS = {
     'j': 'move_older',
     'k': 'move_newer',
     '<CR>': 'revert',
+    '+': 'bigger',
+    '-': 'smaller',
 }
 
 

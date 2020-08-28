@@ -31,6 +31,8 @@ from .nvim import (
     get_line,
     get_lines,
     get_current_line,
+    get_width,
+    set_width,
     WindowLayout,
 )
 
@@ -139,6 +141,19 @@ async def local_history_move(settings: Settings, direction: int) -> None:
 
     await async_call(_local_history_move)
     await async_call(_render_local_history_preview)
+
+
+async def local_history_resize(settings: Settings, direction: int) -> None:
+
+    def _resize() -> None:
+        window, _ = find_window_and_buffer_by_file_type(_LOCAL_HISTORY_FILE_TYPE)
+        if window is None:
+            return
+        width = get_width(window)
+        width = width + direction
+        set_width(window, width)
+
+    await async_call(_resize)
 
 
 async def local_history_quit(settings: Settings) -> None:

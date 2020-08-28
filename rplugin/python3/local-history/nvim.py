@@ -117,6 +117,14 @@ def get_window_option(window: Window, option: str) -> str:
     return _nvim.api.win_get_option(window, option)
 
 
+def set_width(window: Window, width: int) -> None:
+    _nvim.api.win_set_width(window, width)
+
+
+def get_width(window: Window) -> int:
+    return _nvim.api.win_get_width(window)
+
+
 def set_cursor(window: Window, cursor: Tuple[int, int]) -> None:
     _nvim.api.win_set_cursor(window, cursor)
 

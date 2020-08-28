@@ -13,6 +13,7 @@ from .local_history import (
     local_history_quit,
     local_history_move,
     local_history_revert,
+    local_history_resize,
 )
 
 
@@ -71,3 +72,11 @@ class LocalHistoryPlugin(object):
     @function('LocalHistory_move_newer')
     def move_newer(self, args: Sequence[Any]) -> None:
         self._run(local_history_move, -1)
+
+    @function('LocalHistory_bigger')
+    def bigger(self, args: Sequence[Any]) -> None:
+        self._run(local_history_resize, 2)
+
+    @function('LocalHistory_smaller')
+    def smaller(self, args: Sequence[Any]) -> None:
+        self._run(local_history_resize, -2)
