@@ -17,7 +17,8 @@ _DEFAULT_LOCAL_HISTORY_PREVIEW_HEIGHT = 15
 _DEFAULT_LOCAL_HISTORY_MAPPINGS = {
     'q': 'quit',
     'j': 'move_older',
-    'k': 'move_newer'
+    'k': 'move_newer',
+    '<CR>': 'revert',
 }
 
 

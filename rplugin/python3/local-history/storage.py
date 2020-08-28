@@ -18,7 +18,7 @@ _LOCAL_HISTORY_NO_RECORD = 0
 class LocalHistoryChange:
     change_id: int
     timestamp: float
-    lines: list
+    content: list
 
 
 @dataclass(frozen=False)
@@ -55,7 +55,7 @@ class LocalHistoryStorage:
                 record_id = record.next_record_id
                 yield LocalHistoryChange(change_id=record.record_id,
                                          timestamp=record.timestamp,
-                                         lines=decompress(
+                                         content=decompress(
                                              record.content).splitlines())
 
     def save_record(self) -> None:

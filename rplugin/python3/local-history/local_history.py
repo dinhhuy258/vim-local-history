@@ -72,18 +72,21 @@ def _close_local_history_windows() -> bool:
     return closed_local_history_windows
 
 
-def _buf_set_lines(buffer: Buffer,
-                   lines: list) -> Iterator[Tuple[str, Sequence[Any]]]:
-    yield "nvim_buf_set_option", (buffer, "modifiable", True)
+def _buf_set_lines(buffer: Buffer, lines: list,
+                   modifiable: bool) -> Iterator[Tuple[str, Sequence[Any]]]:
+    if not modifiable:
+        yield "nvim_buf_set_option", (buffer, "modifiable", True)
+
     yield "nvim_buf_set_lines", (buffer, 0, -1, True,
                                  [line.rstrip('\n') for line in lines])
-    yield "nvim_buf_set_option", (buffer, "modifiable", False)
+    if not modifiable:
+        yield "nvim_buf_set_option", (buffer, "modifiable", False)
 
 
 def _render_local_history_tree(lines: list) -> None:
     _, buffer = find_window_and_buffer_by_file_type(_LOCAL_HISTORY_FILE_TYPE)
 
-    instruction = _buf_set_lines(buffer, lines)
+    instruction = _buf_set_lines(buffer, lines, False)
     call_atomic(*instruction)
 
 
@@ -100,8 +103,8 @@ def _render_local_history_preview() -> None:
         _LOCAL_HISTORY_PREVIEW_FILE_TYPE)
     preview = diff(
         get_lines(current_buffer, 0, get_line_count(current_buffer)),
-        change.lines)
-    instruction = _buf_set_lines(buffer, preview)
+        change.content)
+    instruction = _buf_set_lines(buffer, preview, False)
     call_atomic(*instruction)
 
 
@@ -145,6 +148,19 @@ async def local_history_move(settings: Settings, direction: int) -> None:
 
 async def local_history_quit(settings: Settings) -> None:
     await async_call(_close_local_history_windows)
+
+
+async def local_history_revert(settings: Settings) -> None:
+    target = await async_call(_get_local_history_target)
+    if target is None or current_buffer is None:
+        return
+    change = local_history_changes[target]
+
+    def _revert() -> None:
+        instruction = _buf_set_lines(current_buffer, change.content, True)
+        call_atomic(*instruction)
+
+    await async_call(_revert)
 
 
 async def local_history_save(settings: Settings, file_path: str) -> None:
