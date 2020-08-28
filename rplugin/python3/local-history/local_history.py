@@ -91,18 +91,18 @@ def _render_local_history_tree(lines: list) -> None:
 
 
 def _render_local_history_preview() -> None:
-    if local_history_changes is None:
+    if _local_history_changes is None:
         return
     target = _get_local_history_target()
     if target is None:
         return
 
-    change: LocalHistoryChange = local_history_changes[target]
+    change: LocalHistoryChange = _local_history_changes[target]
 
     _, buffer = find_window_and_buffer_by_file_type(
         _LOCAL_HISTORY_PREVIEW_FILE_TYPE)
     preview = diff(
-        get_lines(current_buffer, 0, get_line_count(current_buffer)),
+        get_lines(_current_buffer, 0, get_line_count(_current_buffer)),
         change.content)
     instruction = _buf_set_lines(buffer, preview, False)
     call_atomic(*instruction)
@@ -152,12 +152,12 @@ async def local_history_quit(settings: Settings) -> None:
 
 async def local_history_revert(settings: Settings) -> None:
     target = await async_call(_get_local_history_target)
-    if target is None or current_buffer is None:
+    if target is None or _current_buffer is None:
         return
-    change = local_history_changes[target]
+    change = _local_history_changes[target]
 
     def _revert() -> None:
-        instruction = _buf_set_lines(current_buffer, change.content, True)
+        instruction = _buf_set_lines(_current_buffer, change.content, True)
         call_atomic(*instruction)
 
     await async_call(_revert)
@@ -173,8 +173,8 @@ async def local_history_save(settings: Settings, file_path: str) -> None:
 
 
 async def local_history_toggle(settings: Settings) -> None:
-    global current_buffer
-    global local_history_changes
+    global _current_buffer
+    global _local_history_changes
 
     def _toggle() -> Optional[Buffer]:
         windows: Iterator[Window] = _find_local_history_windows_in_tab()
@@ -232,23 +232,23 @@ async def local_history_toggle(settings: Settings) -> None:
 
             return current_buffer
 
-    current_buffer = await async_call(_toggle)
-    if current_buffer is None:
+    _current_buffer = await async_call(_toggle)
+    if _current_buffer is None:
         return
 
     current_file_path = await async_call(
-        partial(get_buffer_name, current_buffer))
+        partial(get_buffer_name, _current_buffer))
 
     local_history_storage = LocalHistoryStorage(settings, current_file_path)
     changes = await run_in_executor(partial(local_history_storage.get_changes))
-    local_history_changes = OrderedDict()
+    _local_history_changes = OrderedDict()
     index = 1
     for change in changes:
-        local_history_changes[index] = change
+        _local_history_changes[index] = change
         index = index + 1
 
     graph = await run_in_executor(
-        partial(build_graph_log, local_history_changes))
+        partial(build_graph_log, _local_history_changes))
 
     await async_call(partial(_render_local_history_tree, graph))
     await async_call(_render_local_history_preview)
