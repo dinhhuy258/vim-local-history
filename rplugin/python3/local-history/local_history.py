@@ -174,15 +174,42 @@ async def local_history_toggle(settings: Settings) -> None:
                 )
                 return None
 
-            buffer = create_buffer(_LOCAL_HISTORY_FILE_TYPE,
-                                   settings.local_history_mappings)
-            window = create_window(settings.local_history_width,
-                                   WindowLayout.LEFT)
+            buffer = create_buffer(
+                settings.local_history_mappings, {
+                    'buftype': 'nofile',
+                    'bufhidden': 'hide',
+                    'swapfile': False,
+                    'buflisted': False,
+                    'modifiable': False,
+                    'filetype': _LOCAL_HISTORY_FILE_TYPE,
+                })
+            window = create_window(
+                settings.local_history_width, WindowLayout.LEFT, {
+                    'list': False,
+                    'number': False,
+                    'relativenumber': False,
+                    'wrap': False,
+                })
             set_buffer_in_window(window, buffer)
 
-            preview_buffer = create_buffer(_LOCAL_HISTORY_PREVIEW_FILE_TYPE)
+            preview_buffer = create_buffer(
+                dict(), {
+                    'buftype': 'nofile',
+                    'bufhidden': 'hide',
+                    'swapfile': False,
+                    'buflisted': False,
+                    'modifiable': False,
+                    'filetype': _LOCAL_HISTORY_PREVIEW_FILE_TYPE,
+                    'syntax': 'diff',
+                })
             preview_window = create_window(
-                settings.local_history_preview_height, WindowLayout.BELOW)
+                settings.local_history_preview_height, WindowLayout.BELOW, {
+                    'number': False,
+                    'relativenumber': False,
+                    'wrap': False,
+                    'foldlevel': 20,
+                    'foldmethod': 'diff',
+                })
             set_buffer_in_window(preview_window, preview_buffer)
 
             set_current_window(window)

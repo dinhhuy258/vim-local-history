@@ -58,14 +58,17 @@ def get_current_window() -> None:
     return _nvim.api.get_current_win()
 
 
-def create_buffer(file_type: str, keymaps: Dict[str, str] = dict()) -> Buffer:
-    options = {"noremap": True, "silent": True, "nowait": True}
+def create_buffer(keymaps: Dict[str, str] = dict(),
+                  options: Dict[str, Any] = dict()) -> Buffer:
+    mapping_options = {"noremap": True, "silent": True, "nowait": True}
     buffer: Buffer = _nvim.api.create_buf(False, True)
-    _nvim.api.buf_set_option(buffer, "modifiable", False)
-    _nvim.api.buf_set_option(buffer, "filetype", file_type)
     for mapping, function in keymaps.items():
         _nvim.api.buf_set_keymap(buffer, "n", mapping,
-                                 f"<cmd>call {function}(v:false)<cr>", options)
+                                 f"<cmd>call {function}(v:false)<cr>",
+                                 mapping_options)
+
+    for option_name, option_value in options.items():
+        _nvim.api.buf_set_option(buffer, option_name, option_value)
 
     return buffer
 
@@ -83,7 +86,9 @@ def find_windows_in_tab() -> Iterator[Window]:
             yield window
 
 
-def create_window(size: int, layout: WindowLayout) -> Window:
+def create_window(
+    size: int, layout: WindowLayout, options: Dict[str,
+                                                   Any] = dict()) -> Window:
     split_right = _nvim.api.get_option("splitright")
     split_below = _nvim.api.get_option("splitbelow")
 
@@ -102,6 +107,9 @@ def create_window(size: int, layout: WindowLayout) -> Window:
 
     _nvim.api.set_option("splitright", split_right)
     _nvim.api.set_option("splitbelow", split_below)
+
+    for option_name, option_value in options.items():
+        _nvim.api.win_set_option(focus_win, option_name, option_value)
 
     window: Window = _nvim.api.get_current_win()
     return window
