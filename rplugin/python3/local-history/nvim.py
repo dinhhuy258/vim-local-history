@@ -131,7 +131,8 @@ def get_line_count(buffer: Buffer) -> int:
     return _nvim.api.buf_line_count(buffer)
 
 
-from .logging import log
+def get_lines(buffer: Buffer, start: int, end: int) -> list:
+    return _nvim.api.buf_get_lines(buffer, start, end, False)
 
 
 def get_line(buffer: Buffer, row: int) -> Optional[str]:

@@ -1,5 +1,6 @@
 import bz2
 import os
+import difflib
 from os import path
 from asyncio import get_running_loop
 from functools import partial
@@ -37,3 +38,12 @@ def is_folder_exists(folder_path: str) -> bool:
 def create_folder_if_not_present(folder_path: str) -> None:
     if not is_folder_exists(folder_path):
         os.makedirs(folder_path)
+
+
+def diff(current: list, history: list) -> list:
+    return list(
+        difflib.unified_diff(current,
+                             history,
+                             fromfile='current',
+                             tofile='history',
+                             lineterm=''))

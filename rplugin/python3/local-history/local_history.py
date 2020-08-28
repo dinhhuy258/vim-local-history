@@ -8,7 +8,7 @@ from .graph_log import build_graph_log
 from .storage import LocalHistoryStorage, LocalHistoryChange
 from .settings import Settings
 from .logging import log
-from .utils import create_folder_if_not_present, run_in_executor
+from .utils import create_folder_if_not_present, run_in_executor, diff
 from .nvim import (
     async_call,
     call_atomic,
@@ -29,6 +29,7 @@ from .nvim import (
     set_cursor,
     get_line_count,
     get_line,
+    get_lines,
     get_current_line,
     WindowLayout,
 )
@@ -74,7 +75,8 @@ def _close_local_history_windows() -> bool:
 def _buf_set_lines(buffer: Buffer,
                    lines: list) -> Iterator[Tuple[str, Sequence[Any]]]:
     yield "nvim_buf_set_option", (buffer, "modifiable", True)
-    yield "nvim_buf_set_lines", (buffer, 0, -1, True, lines)
+    yield "nvim_buf_set_lines", (buffer, 0, -1, True,
+                                 [line.rstrip('\n') for line in lines])
     yield "nvim_buf_set_option", (buffer, "modifiable", False)
 
 
@@ -96,8 +98,10 @@ def _render_local_history_preview() -> None:
 
     _, buffer = find_window_and_buffer_by_file_type(
         _LOCAL_HISTORY_PREVIEW_FILE_TYPE)
-
-    instruction = _buf_set_lines(buffer, change.lines)
+    preview = diff(
+        get_lines(current_buffer, 0, get_line_count(current_buffer)),
+        change.lines)
+    instruction = _buf_set_lines(buffer, preview)
     call_atomic(*instruction)
 
 
@@ -153,23 +157,22 @@ async def local_history_save(settings: Settings, file_path: str) -> None:
 
 
 async def local_history_toggle(settings: Settings) -> None:
+    global current_buffer
     global local_history_changes
 
-    def _toggle() -> Optional[str]:
+    def _toggle() -> Optional[Buffer]:
         windows: Iterator[Window] = _find_local_history_windows_in_tab()
         closed_local_history_windows = _close_local_history_windows()
 
         if closed_local_history_windows:
-            return
+            return None
         else:
-            buffer = get_current_buffer()
-            if not _is_buffer_valid(buffer):
+            current_buffer = get_current_buffer()
+            if not _is_buffer_valid(current_buffer):
                 log.info(
                     '[vim-local-history] Current buffer is not a valid target for vim-local-history'
                 )
                 return None
-
-            current_file_path = get_buffer_name(buffer)
 
             buffer = create_buffer(_LOCAL_HISTORY_FILE_TYPE,
                                    settings.local_history_mappings)
@@ -184,14 +187,16 @@ async def local_history_toggle(settings: Settings) -> None:
 
             set_current_window(window)
 
-            return current_file_path
+            return current_buffer
 
-    file_path = await async_call(_toggle)
-
-    if not file_path:
+    current_buffer = await async_call(_toggle)
+    if current_buffer is None:
         return
 
-    local_history_storage = LocalHistoryStorage(settings, file_path)
+    current_file_path = await async_call(
+        partial(get_buffer_name, current_buffer))
+
+    local_history_storage = LocalHistoryStorage(settings, current_file_path)
     changes = await run_in_executor(partial(local_history_storage.get_changes))
     local_history_changes = OrderedDict()
     index = 1
