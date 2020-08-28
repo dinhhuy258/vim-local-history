@@ -1,3 +1,4 @@
+import re
 from pynvim.api.buffer import Buffer
 from pynvim.api.window import Window
 from collections import OrderedDict
@@ -28,6 +29,7 @@ from .nvim import (
     set_cursor,
     get_line_count,
     get_line,
+    get_current_line,
     WindowLayout,
 )
 
@@ -69,6 +71,47 @@ def _close_local_history_windows() -> bool:
     return closed_local_history_windows
 
 
+def _buf_set_lines(buffer: Buffer,
+                   lines: list) -> Iterator[Tuple[str, Sequence[Any]]]:
+    yield "nvim_buf_set_option", (buffer, "modifiable", True)
+    yield "nvim_buf_set_lines", (buffer, 0, -1, True, lines)
+    yield "nvim_buf_set_option", (buffer, "modifiable", False)
+
+
+def _render_local_history_tree(lines: list) -> None:
+    _, buffer = find_window_and_buffer_by_file_type(_LOCAL_HISTORY_FILE_TYPE)
+
+    instruction = _buf_set_lines(buffer, lines)
+    call_atomic(*instruction)
+
+
+def _render_local_history_preview() -> None:
+    if local_history_changes is None:
+        return
+    target = _get_local_history_target()
+    if target is None:
+        return
+
+    change: LocalHistoryChange = local_history_changes[target]
+
+    _, buffer = find_window_and_buffer_by_file_type(
+        _LOCAL_HISTORY_PREVIEW_FILE_TYPE)
+
+    instruction = _buf_set_lines(buffer, change.lines)
+    call_atomic(*instruction)
+
+
+def _get_local_history_target() -> Optional[int]:
+    window, _ = find_window_and_buffer_by_file_type(_LOCAL_HISTORY_FILE_TYPE)
+    set_current_window(window)
+    current_line = get_current_line()
+    matches = re.match('^[^\[]* \[([0-9]+)\] .*$', current_line)
+    if matches:
+        return int(matches.group(1))
+
+    return None
+
+
 async def local_history_move(settings: Settings, direction: int) -> None:
     def _local_history_move() -> None:
         window = get_current_window()
@@ -93,6 +136,7 @@ async def local_history_move(settings: Settings, direction: int) -> None:
         set_cursor(window, (new_row, 0))
 
     await async_call(_local_history_move)
+    await async_call(_render_local_history_preview)
 
 
 async def local_history_quit(settings: Settings) -> None:
@@ -158,17 +202,5 @@ async def local_history_toggle(settings: Settings) -> None:
     graph = await run_in_executor(
         partial(build_graph_log, local_history_changes))
 
-    def _render_local_history_tree():
-        window, buffer = find_window_and_buffer_by_file_type(
-            _LOCAL_HISTORY_FILE_TYPE)
-
-        def _buf_set_lines(buffer: Buffer,
-                           lines: list) -> Iterator[Tuple[str, Sequence[Any]]]:
-            yield "nvim_buf_set_option", (buffer, "modifiable", True)
-            yield "nvim_buf_set_lines", (buffer, 0, -1, True, graph)
-            yield "nvim_buf_set_option", (buffer, "modifiable", False)
-
-        instruction = _buf_set_lines(buffer, graph)
-        call_atomic(*instruction)
-
-    await async_call(_render_local_history_tree)
+    await async_call(partial(_render_local_history_tree, graph))
+    await async_call(_render_local_history_preview)

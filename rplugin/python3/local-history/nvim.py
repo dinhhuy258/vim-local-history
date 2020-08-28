@@ -123,6 +123,10 @@ def get_current_cursor(window: Window) -> Tuple[int, int]:
     return _nvim.api.win_get_cursor(window)
 
 
+def get_current_line() -> str:
+    return _nvim.api.get_current_line()
+
+
 def get_line_count(buffer: Buffer) -> int:
     return _nvim.api.buf_line_count(buffer)
 
