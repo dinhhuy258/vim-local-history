@@ -119,6 +119,14 @@ def get_window_option(window: Window, option: str) -> str:
     return _nvim.api.win_get_option(window, option)
 
 
+def set_height(window: Window, height: int) -> None:
+    _nvim.api.win_set_height(window, height)
+
+
+def get_height(window: Window) -> int:
+    return _nvim.api.win_get_height(window)
+
+
 def set_width(window: Window, width: int) -> None:
     _nvim.api.win_set_width(window, width)
 

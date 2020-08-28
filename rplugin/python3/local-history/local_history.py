@@ -33,6 +33,8 @@ from .nvim import (
     get_current_line,
     get_width,
     set_width,
+    get_height,
+    set_height,
     WindowLayout,
 )
 
@@ -143,6 +145,19 @@ async def local_history_move(settings: Settings, direction: int) -> None:
     await async_call(_render_local_history_preview)
 
 
+async def local_history_preview_resize(settings: Settings, direction: int) -> None:
+
+    def _resize() -> None:
+        window, _ = find_window_and_buffer_by_file_type(_LOCAL_HISTORY_PREVIEW_FILE_TYPE)
+        if window is None:
+            return
+        height = get_height(window)
+        height = height + direction
+        set_height(window, height)
+
+    await async_call(_resize)
+
+
 async def local_history_resize(settings: Settings, direction: int) -> None:
 
     def _resize() -> None:
@@ -215,7 +230,7 @@ async def local_history_toggle(settings: Settings) -> None:
             set_buffer_in_window(window, buffer)
 
             preview_buffer = create_buffer(
-                dict(), {
+                settings.local_history_preview_mappings, {
                     'buftype': 'nofile',
                     'bufhidden': 'hide',
                     'swapfile': False,
