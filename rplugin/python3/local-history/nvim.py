@@ -57,11 +57,13 @@ def get_current_window() -> None:
     return _nvim.api.get_current_win()
 
 
-def create_buffer(keymaps: Dict[str, str] = dict(), options: Dict[str, Any] = dict()) -> Buffer:
+def create_buffer(keymaps: Dict[str, Sequence[str]] = dict(), options: Dict[str, Any] = dict()) -> Buffer:
     mapping_options = {"noremap": True, "silent": True, "nowait": True}
     buffer: Buffer = _nvim.api.create_buf(False, True)
-    for mapping, function in keymaps.items():
-        _nvim.api.buf_set_keymap(buffer, "n", mapping, f"<cmd>call {function}(v:false)<cr>", mapping_options)
+
+    for function, mappings in keymaps.items():
+        for mapping in mappings:
+            _nvim.api.buf_set_keymap(buffer, "n", mapping, f"<cmd>call {function}(v:false)<cr>", mapping_options)
 
     for option_name, option_value in options.items():
         _nvim.api.buf_set_option(buffer, option_name, option_value)

@@ -15,12 +15,12 @@ _DEFAULT_LOCAL_HISTORY_WIDTH = 45
 _DEFAULT_LOCAL_HISTORY_PREVIEW_HEIGHT = 15
 
 _DEFAULT_LOCAL_HISTORY_MAPPINGS = {
-    'q': 'quit',
-    'j': 'move_older',
-    'k': 'move_newer',
-    '<CR>': 'revert',
-    '+': 'bigger',
-    '-': 'smaller',
+    'quit': ['q'],
+    'move_older': ['j'],
+    'move_newer': ['k'],
+    'revert': ['<CR>'],
+    'bigger': ['+', '='],
+    'smaller': ['-', '_'],
 }
 
 
@@ -45,7 +45,9 @@ def load_settings() -> Settings:
     local_history_preview_height = get_global_var(
         'local_history_preview_height') or _DEFAULT_LOCAL_HISTORY_PREVIEW_HEIGHT
     local_history_mappings = get_global_var('local_history_mappings') or _DEFAULT_LOCAL_HISTORY_MAPPINGS
-    local_history_mappings = {key: f"LocalHistory_{function}" for key, function in local_history_mappings.items()}
+    local_history_mappings = {
+        f"LocalHistory_{function}": mappings for function, mappings in local_history_mappings.items()
+    }
 
     return Settings(local_history_path=local_history_path,
                     local_history_max_display=local_history_max_display,
