@@ -17,6 +17,7 @@ def build_graph_log(changes: OrderedDict) -> list:
 
 
 def _calculate_age(timestamp: float) -> str:
+
     def format(t, c):
         return "%d %s" % (int(c), t if c == 1 else t + "s")
 

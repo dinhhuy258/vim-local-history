@@ -7,6 +7,7 @@ T = TypeVar("T")
 
 
 class ExecutorService:
+
     def __init__(self) -> None:
         self.__thread = Thread(target=self._loop, daemon=True)
         self._queue: SimpleQueue = SimpleQueue()
@@ -17,8 +18,7 @@ class ExecutorService:
             func = self._queue.get()
             func()
 
-    def run_sync(self, func: Callable[..., T], *args: Any,
-                 **kwargs: Any) -> Future:
+    def run_sync(self, func: Callable[..., T], *args: Any, **kwargs: Any) -> Future:
         future = Future()
 
         def run() -> None:

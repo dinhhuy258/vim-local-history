@@ -32,8 +32,7 @@ def init_nvim(nvim: Nvim) -> None:
 
 
 def call_atomic(*instructions: Tuple[str, Sequence[Any]]) -> None:
-    inst = tuple(
-        (f"{instruction}", args) for instruction, args in instructions)
+    inst = tuple((f"{instruction}", args) for instruction, args in instructions)
     out, error = _nvim.api.call_atomic(inst)
     if error:
         raise NvimError(error)
@@ -58,14 +57,11 @@ def get_current_window() -> None:
     return _nvim.api.get_current_win()
 
 
-def create_buffer(keymaps: Dict[str, str] = dict(),
-                  options: Dict[str, Any] = dict()) -> Buffer:
+def create_buffer(keymaps: Dict[str, str] = dict(), options: Dict[str, Any] = dict()) -> Buffer:
     mapping_options = {"noremap": True, "silent": True, "nowait": True}
     buffer: Buffer = _nvim.api.create_buf(False, True)
     for mapping, function in keymaps.items():
-        _nvim.api.buf_set_keymap(buffer, "n", mapping,
-                                 f"<cmd>call {function}(v:false)<cr>",
-                                 mapping_options)
+        _nvim.api.buf_set_keymap(buffer, "n", mapping, f"<cmd>call {function}(v:false)<cr>", mapping_options)
 
     for option_name, option_value in options.items():
         _nvim.api.buf_set_option(buffer, option_name, option_value)
@@ -74,6 +70,7 @@ def create_buffer(keymaps: Dict[str, str] = dict(),
 
 
 def find_windows_in_tab() -> Iterator[Window]:
+
     def key_by(window: Window) -> Tuple[int, int]:
         row, col = _nvim.api.win_get_position(window)
         return (col, row)
@@ -86,14 +83,11 @@ def find_windows_in_tab() -> Iterator[Window]:
             yield window
 
 
-def create_window(
-    size: int, layout: WindowLayout, options: Dict[str,
-                                                   Any] = dict()) -> Window:
+def create_window(size: int, layout: WindowLayout, options: Dict[str, Any] = dict()) -> Window:
     split_right = _nvim.api.get_option("splitright")
     split_below = _nvim.api.get_option("splitbelow")
 
-    windows: Sequence[Window] = tuple(window
-                                      for window in find_windows_in_tab())
+    windows: Sequence[Window] = tuple(window for window in find_windows_in_tab())
 
     focus_win = windows[0]
 
@@ -161,8 +155,7 @@ def get_buffer_in_window(window: Window) -> Buffer:
     return _nvim.api.win_get_buf(window)
 
 
-def find_window_and_buffer_by_file_type(
-        file_type: str) -> Optional[Tuple[Window, Buffer]]:
+def find_window_and_buffer_by_file_type(file_type: str) -> Optional[Tuple[Window, Buffer]]:
     for window in _nvim.api.list_wins():
         buffer: Buffer = _nvim.api.win_get_buf(window)
         if file_type == _nvim.api.buf_get_option(buffer, "filetype"):

@@ -58,8 +58,7 @@ def _is_buffer_valid(buffer: Buffer) -> str:
         return False
 
     window = get_current_window()
-    return get_buffer_option(buffer, 'modifiable') and not get_window_option(
-        window, 'previewwindow')
+    return get_buffer_option(buffer, 'modifiable') and not get_window_option(window, 'previewwindow')
 
 
 def _close_local_history_windows() -> bool:
@@ -72,13 +71,11 @@ def _close_local_history_windows() -> bool:
     return closed_local_history_windows
 
 
-def _buf_set_lines(buffer: Buffer, lines: list,
-                   modifiable: bool) -> Iterator[Tuple[str, Sequence[Any]]]:
+def _buf_set_lines(buffer: Buffer, lines: list, modifiable: bool) -> Iterator[Tuple[str, Sequence[Any]]]:
     if not modifiable:
         yield "nvim_buf_set_option", (buffer, "modifiable", True)
 
-    yield "nvim_buf_set_lines", (buffer, 0, -1, True,
-                                 [line.rstrip('\n') for line in lines])
+    yield "nvim_buf_set_lines", (buffer, 0, -1, True, [line.rstrip('\n') for line in lines])
     if not modifiable:
         yield "nvim_buf_set_option", (buffer, "modifiable", False)
 
@@ -99,11 +96,8 @@ def _render_local_history_preview() -> None:
 
     change: LocalHistoryChange = _local_history_changes[target]
 
-    _, buffer = find_window_and_buffer_by_file_type(
-        _LOCAL_HISTORY_PREVIEW_FILE_TYPE)
-    preview = diff(
-        get_lines(_current_buffer, 0, get_line_count(_current_buffer)),
-        change.content)
+    _, buffer = find_window_and_buffer_by_file_type(_LOCAL_HISTORY_PREVIEW_FILE_TYPE)
+    preview = diff(get_lines(_current_buffer, 0, get_line_count(_current_buffer)), change.content)
     instruction = _buf_set_lines(buffer, preview, False)
     call_atomic(*instruction)
 
@@ -120,6 +114,7 @@ def _get_local_history_target() -> Optional[int]:
 
 
 async def local_history_move(settings: Settings, direction: int) -> None:
+
     def _local_history_move() -> None:
         window = get_current_window()
         buffer = get_buffer_in_window(window)
@@ -164,8 +159,7 @@ async def local_history_revert(settings: Settings) -> None:
 
 
 async def local_history_save(settings: Settings, file_path: str) -> None:
-    await run_in_executor(
-        partial(create_folder_if_not_present, settings.local_history_path))
+    await run_in_executor(partial(create_folder_if_not_present, settings.local_history_path))
 
     local_history_storage = LocalHistoryStorage(settings, file_path)
     await run_in_executor(partial(local_history_storage.save_record))
@@ -185,9 +179,7 @@ async def local_history_toggle(settings: Settings) -> None:
         else:
             current_buffer = get_current_buffer()
             if not _is_buffer_valid(current_buffer):
-                log.info(
-                    '[vim-local-history] Current buffer is not a valid target for vim-local-history'
-                )
+                log.info('[vim-local-history] Current buffer is not a valid target for vim-local-history')
                 return None
 
             buffer = create_buffer(
@@ -199,13 +191,12 @@ async def local_history_toggle(settings: Settings) -> None:
                     'modifiable': False,
                     'filetype': _LOCAL_HISTORY_FILE_TYPE,
                 })
-            window = create_window(
-                settings.local_history_width, WindowLayout.LEFT, {
-                    'list': False,
-                    'number': False,
-                    'relativenumber': False,
-                    'wrap': False,
-                })
+            window = create_window(settings.local_history_width, WindowLayout.LEFT, {
+                'list': False,
+                'number': False,
+                'relativenumber': False,
+                'wrap': False,
+            })
             set_buffer_in_window(window, buffer)
 
             preview_buffer = create_buffer(
@@ -218,14 +209,13 @@ async def local_history_toggle(settings: Settings) -> None:
                     'filetype': _LOCAL_HISTORY_PREVIEW_FILE_TYPE,
                     'syntax': 'diff',
                 })
-            preview_window = create_window(
-                settings.local_history_preview_height, WindowLayout.BELOW, {
-                    'number': False,
-                    'relativenumber': False,
-                    'wrap': False,
-                    'foldlevel': 20,
-                    'foldmethod': 'diff',
-                })
+            preview_window = create_window(settings.local_history_preview_height, WindowLayout.BELOW, {
+                'number': False,
+                'relativenumber': False,
+                'wrap': False,
+                'foldlevel': 20,
+                'foldmethod': 'diff',
+            })
             set_buffer_in_window(preview_window, preview_buffer)
 
             set_current_window(window)
@@ -236,8 +226,7 @@ async def local_history_toggle(settings: Settings) -> None:
     if _current_buffer is None:
         return
 
-    current_file_path = await async_call(
-        partial(get_buffer_name, _current_buffer))
+    current_file_path = await async_call(partial(get_buffer_name, _current_buffer))
 
     local_history_storage = LocalHistoryStorage(settings, current_file_path)
     changes = await run_in_executor(partial(local_history_storage.get_changes))
@@ -247,8 +236,7 @@ async def local_history_toggle(settings: Settings) -> None:
         _local_history_changes[index] = change
         index = index + 1
 
-    graph = await run_in_executor(
-        partial(build_graph_log, _local_history_changes))
+    graph = await run_in_executor(partial(build_graph_log, _local_history_changes))
 
     await async_call(partial(_render_local_history_tree, graph))
     await async_call(_render_local_history_preview)

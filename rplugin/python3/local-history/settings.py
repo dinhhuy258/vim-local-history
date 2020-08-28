@@ -33,26 +33,17 @@ class Settings:
 
 
 def load_settings() -> Settings:
-    local_history_path = get_global_var(
-        'g:local_history_path') or _DEFAULT_LOCAL_HISTORY_PATH
+    local_history_path = get_global_var('g:local_history_path') or _DEFAULT_LOCAL_HISTORY_PATH
     if not local_history_path.startswith(os.path.expanduser("~")):
         local_history_path = os.path.join(os.getcwd(), local_history_path)
 
-    local_history_max_display = get_global_var(
-        'local_history_max_display') or _DEFAULT_LOCAL_HISTORY_MAX_DISPLAY
-    local_history_save_delay = get_global_var(
-        'local_history_save_delay') or _DEFAULT_LOCAL_HISTORY_SAVE_DELAY
-    local_history_width = get_global_var(
-        'local_history_width') or _DEFAULT_LOCAL_HISTORY_WIDTH
+    local_history_max_display = get_global_var('local_history_max_display') or _DEFAULT_LOCAL_HISTORY_MAX_DISPLAY
+    local_history_save_delay = get_global_var('local_history_save_delay') or _DEFAULT_LOCAL_HISTORY_SAVE_DELAY
+    local_history_width = get_global_var('local_history_width') or _DEFAULT_LOCAL_HISTORY_WIDTH
     local_history_preview_height = get_global_var(
-        'local_history_preview_height'
-    ) or _DEFAULT_LOCAL_HISTORY_PREVIEW_HEIGHT
-    local_history_mappings = get_global_var(
-        'local_history_mappings') or _DEFAULT_LOCAL_HISTORY_MAPPINGS
-    local_history_mappings = {
-        key: f"LocalHistory_{function}"
-        for key, function in local_history_mappings.items()
-    }
+        'local_history_preview_height') or _DEFAULT_LOCAL_HISTORY_PREVIEW_HEIGHT
+    local_history_mappings = get_global_var('local_history_mappings') or _DEFAULT_LOCAL_HISTORY_MAPPINGS
+    local_history_mappings = {key: f"LocalHistory_{function}" for key, function in local_history_mappings.items()}
 
     return Settings(local_history_path=local_history_path,
                     local_history_max_display=local_history_max_display,

@@ -18,6 +18,7 @@ from .local_history import (
 
 @plugin
 class LocalHistoryPlugin(object):
+
     def __init__(self, nvim: Nvim) -> None:
         self._nvim = nvim
         self._lock = Lock()
@@ -40,6 +41,7 @@ class LocalHistoryPlugin(object):
         self._executor.run_sync(submit)
 
     def _run(self, func: Callable[..., Awaitable[None]], *args: Any) -> None:
+
         async def run() -> None:
             async with self._lock:
                 await func(self._settings, *args)

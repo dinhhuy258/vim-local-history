@@ -9,8 +9,7 @@ from typing import Any, Callable, TypeVar
 T = TypeVar("T")
 
 
-async def run_in_executor(func: Callable[..., T], *args: Any,
-                          **kwargs: Any) -> T:
+async def run_in_executor(func: Callable[..., T], *args: Any, **kwargs: Any) -> T:
     loop = get_running_loop()
     return await loop.run_in_executor(None, partial(func, *args, **kwargs))
 
@@ -41,9 +40,4 @@ def create_folder_if_not_present(folder_path: str) -> None:
 
 
 def diff(current: list, history: list) -> list:
-    return list(
-        difflib.unified_diff(current,
-                             history,
-                             fromfile='current',
-                             tofile='history',
-                             lineterm=''))
+    return list(difflib.unified_diff(current, history, fromfile='current', tofile='history', lineterm=''))

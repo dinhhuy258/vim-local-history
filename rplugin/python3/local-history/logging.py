@@ -15,7 +15,9 @@ function: {funcName}
 
 
 def init_log(nvim: Nvim) -> None:
+
     class NvimHandler(Handler):
+
         def handle(self, log_record: LogRecord) -> None:
             message = self.format(log_record)
             if log_record.levelno >= ERROR:
