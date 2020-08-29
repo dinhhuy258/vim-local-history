@@ -103,6 +103,9 @@ def _buf_set_lines(buffer: Buffer, lines: list, modifiable: bool) -> Iterator[Tu
 def _render_local_history_tree(lines: list) -> None:
     _, buffer = find_window_and_buffer_by_file_type(_LOCAL_HISTORY_FILE_TYPE)
 
+    if not lines:
+        lines = ['History is empty']
+
     instruction = _buf_set_lines(buffer, lines, False)
     call_atomic(*instruction)
 
@@ -120,6 +123,9 @@ def _render_local_history_preview() -> None:
     preview = diff(
         get_lines(_local_history_state.current_buffer, 0, get_line_count(_local_history_state.current_buffer)),
         change.content)
+    if not preview:
+        preview = ['Contents are identical']
+
     instruction = _buf_set_lines(buffer, preview, False)
     call_atomic(*instruction)
 
