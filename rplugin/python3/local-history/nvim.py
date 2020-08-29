@@ -108,10 +108,10 @@ def create_window(size: int, layout: WindowLayout, options: Dict[str, Any] = dic
     _nvim.api.set_option("splitright", split_right)
     _nvim.api.set_option("splitbelow", split_below)
 
-    for option_name, option_value in options.items():
-        _nvim.api.win_set_option(focus_win, option_name, option_value)
-
     window: Window = _nvim.api.get_current_win()
+    for option_name, option_value in options.items():
+        _nvim.api.win_set_option(window, option_name, option_value)
+
     return window
 
 
