@@ -71,8 +71,8 @@ async def load_settings() -> Settings:
     return Settings(local_history_disable=local_history_disable,
                     local_history_path=local_history_path,
                     local_history_show_messages=local_history_show_messages,
-                    local_history_max_display=local_history_max_display,
-                    local_history_save_delay=local_history_save_delay,
-                    local_history_width=local_history_width,
-                    local_history_preview_height=local_history_preview_height,
+                    local_history_max_display=max(1, local_history_max_display),
+                    local_history_save_delay=max(0, local_history_save_delay),
+                    local_history_width=max(1, local_history_width),
+                    local_history_preview_height=max(1, local_history_preview_height),
                     local_history_mappings=local_history_mappings)

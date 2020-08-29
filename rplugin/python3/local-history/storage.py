@@ -143,22 +143,23 @@ class LocalHistoryStorage:
             local_history_file[str(last_record.record_id)] = last_record
 
             # Update header
-            header.num_records += 1
+            header.num_records = header.num_records + 1
             header.last_record_id = local_history_record.record_id
 
-            if header.num_records > self._settings.local_history_max_display:
+            while header.num_records > self._settings.local_history_max_display:
                 # Remove the first_record
                 first_record = local_history_file[str(header.first_record_id)]
-                new_first_record_id = first_record.record_id
+                new_first_record_id = first_record.next_record_id
                 del local_history_file[str(header.first_record_id)]
 
                 # Update previous record for the new first record
-                new_first_record = local_history_file[str(new_first_record)]
+                new_first_record = local_history_file[str(new_first_record_id)]
                 new_first_record.previous_record_id = _LOCAL_HISTORY_NO_RECORD
-                local_history_file[str(new_first_record)] = new_first_record
+                local_history_file[str(new_first_record_id)] = new_first_record
 
                 # Update new first record into the header
                 header.first_record_id = new_first_record_id
+                header.num_records = header.num_records - 1
 
             # Update header
             local_history_file[_LOCAL_HISTORY_HEADER] = header
