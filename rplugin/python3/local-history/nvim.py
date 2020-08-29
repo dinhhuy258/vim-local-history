@@ -202,8 +202,8 @@ def set_current_window(window: Window) -> None:
     _nvim.api.set_current_win(window)
 
 
-def get_global_var(name: str) -> Optional[Any]:
+def get_global_var(name: str, default_value: Any) -> Any:
     try:
         return _nvim.api.get_var(name)
     except:
-        return None
+        return default_value

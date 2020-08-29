@@ -248,6 +248,9 @@ async def local_history_revert(settings: Settings) -> None:
 
 
 async def local_history_save(settings: Settings, file_path: str) -> None:
+    if settings.local_history_disable:
+        return
+
     await run_in_executor(partial(create_folder_if_not_present, settings.local_history_path))
 
     local_history_storage = LocalHistoryStorage(settings, file_path)
@@ -257,6 +260,9 @@ async def local_history_save(settings: Settings, file_path: str) -> None:
 
 
 async def local_history_toggle(settings: Settings) -> None:
+    if settings.local_history_disable:
+        return
+
     global _local_history_state
 
     _local_history_state = None

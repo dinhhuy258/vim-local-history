@@ -29,7 +29,7 @@ class LocalHistoryPlugin(object):
         self._executor = ExecutorService()
         init_nvim(self._nvim)
         init_log(self._nvim)
-        self._settings = load_settings()
+        self._settings = None
 
     def _submit(self, coro: Awaitable[None]) -> None:
         loop: AbstractEventLoop = self._nvim.loop
@@ -48,6 +48,8 @@ class LocalHistoryPlugin(object):
 
         async def run() -> None:
             async with self._lock:
+                if self._settings is None:
+                    self._settings = await load_settings()
                 await func(self._settings, *args)
 
         self._submit(run())
