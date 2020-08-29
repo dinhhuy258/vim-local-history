@@ -105,12 +105,12 @@ class LocalHistoryStorage:
                                                   _LOCAL_HISTORY_NO_RECORD)
 
             # Compress the content to reduce the size before saving
-            compressionContent = compress(content)
+            compression_content = compress(content)
 
             if header.last_record_id == _LOCAL_HISTORY_NO_RECORD:
                 # Store patch and header
                 local_history_record = LocalHistoryRecord(_LOCAL_HISTORY_FIRST_RECORD_ID, current_timestamp,
-                                                          compressionContent, _LOCAL_HISTORY_NO_RECORD,
+                                                          compression_content, _LOCAL_HISTORY_NO_RECORD,
                                                           _LOCAL_HISTORY_NO_RECORD)
                 local_history_file[str(local_history_record.record_id)] = local_history_record
 
@@ -122,15 +122,19 @@ class LocalHistoryStorage:
                 return
 
             last_record = local_history_file[str(header.last_record_id)]
+
+            if last_record.content == compression_content:
+                return
+
             if current_timestamp - last_record.timestamp < self._settings.local_history_save_delay:
                 # Update the content of the last record in the case duration between current timestamp and timestamp of the last record is less than save delay
-                last_record.content = compressionContent
+                last_record.content = compression_content
                 # FIXME: Should we update the timestamp value?
                 local_history_file[str(header.last_record_id)] = last_record
                 return
 
             # Store patch
-            local_history_record = LocalHistoryRecord(header.last_record_id + 1, current_timestamp, compressionContent,
+            local_history_record = LocalHistoryRecord(header.last_record_id + 1, current_timestamp, compression_content,
                                                       header.last_record_id, _LOCAL_HISTORY_NO_RECORD)
             local_history_file[str(local_history_record.record_id)] = local_history_record
 
