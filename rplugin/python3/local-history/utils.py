@@ -39,5 +39,9 @@ def create_folder_if_not_present(folder_path: str) -> None:
         os.makedirs(folder_path)
 
 
+def is_in_workspace(file_path: str) -> bool:
+    return file_path.startswith(os.getcwd())
+
+
 def diff(current: list, history: list) -> list:
     return list(difflib.unified_diff(current, history, fromfile='current', tofile='history', lineterm=''))

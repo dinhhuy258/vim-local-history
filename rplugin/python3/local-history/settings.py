@@ -1,11 +1,19 @@
 import os
 from pynvim import Nvim
+from enum import Enum
 from dataclasses import dataclass
 from functools import partial
 from typing import Dict
 from .nvim import get_global_var, async_call
 
-_DEFAULT_LOCAL_HISTORY_DISABLE = False
+
+class LocalHistoryEnabled(Enum):
+    NEVER = 0
+    ALWAYS = 1
+    WORKSPACE = 2
+
+
+_DEFAULT_LOCAL_HISTORY_ENABLED = LocalHistoryEnabled.ALWAYS.value
 
 _DEFAULT_LOCAL_HISTORY_PATH = '.local_history'
 
@@ -36,7 +44,7 @@ _DEFAULT_LOCAL_HISTORY_MAPPINGS = {
 
 @dataclass(frozen=True)
 class Settings:
-    disable: bool
+    enabled: LocalHistoryEnabled
     path: str
     show_info_messages: bool
     max_display: int
@@ -47,7 +55,13 @@ class Settings:
 
 
 async def load_settings() -> Settings:
-    disable = await async_call(partial(get_global_var, 'local_history_disable', _DEFAULT_LOCAL_HISTORY_DISABLE))
+    enabled_value = await async_call(partial(get_global_var, 'local_history_enabled', _DEFAULT_LOCAL_HISTORY_ENABLED))
+    enabled = LocalHistoryEnabled.ALWAYS
+    if enabled_value == LocalHistoryEnabled.NEVER.value:
+        enabled = LocalHistoryEnabled.NEVER
+    elif enabled_value == LocalHistoryEnabled.WORKSPACE.value:
+        enabled = LocalHistoryEnabled.WORKSPACE
+
     path = await async_call(partial(get_global_var, 'local_history_path', _DEFAULT_LOCAL_HISTORY_PATH))
     if not path.startswith(os.path.expanduser("~")):
         path = os.path.join(os.getcwd(), path)
@@ -64,7 +78,7 @@ async def load_settings() -> Settings:
     mappings = await async_call(partial(get_global_var, 'local_history_mappings', _DEFAULT_LOCAL_HISTORY_MAPPINGS))
     mappings = {f"LocalHistory_{function}": mappings for function, mappings in mappings.items()}
 
-    return Settings(disable=disable,
+    return Settings(enabled=enabled,
                     path=path,
                     show_info_messages=show_info_messages,
                     max_display=max(1, max_display),

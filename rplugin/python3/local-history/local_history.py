@@ -8,9 +8,14 @@ from typing import Optional, Iterator, Tuple, Sequence, Any
 from functools import partial
 from .graph_log import build_graph_log
 from .storage import LocalHistoryStorage, LocalHistoryChange
-from .settings import Settings
+from .settings import Settings, LocalHistoryEnabled
 from .logging import log
-from .utils import create_folder_if_not_present, run_in_executor, diff
+from .utils import (
+    create_folder_if_not_present,
+    is_in_workspace,
+    run_in_executor,
+    diff,
+)
 from .nvim import (
     async_call,
     call_atomic,
@@ -254,7 +259,13 @@ async def local_history_revert(settings: Settings) -> None:
 
 
 async def local_history_save(settings: Settings, file_path: str) -> None:
-    if settings.disable:
+    if settings.enabled == LocalHistoryEnabled.NEVER:
+        if settings.show_info_messages:
+            log.info('[vim-local-history] Local history disabled')
+        return
+    if settings.enabled == LocalHistoryEnabled.WORKSPACE and not is_in_workspace(file_path):
+        if settings.show_info_messages:
+            log.info('[vim-local-history] Local history disabled for files which not in the current workspace')
         return
 
     await run_in_executor(partial(create_folder_if_not_present, settings.path))
@@ -266,7 +277,9 @@ async def local_history_save(settings: Settings, file_path: str) -> None:
 
 
 async def local_history_toggle(settings: Settings) -> None:
-    if settings.disable:
+    if settings.enabled == LocalHistoryEnabled.NEVER:
+        if settings.show_info_messages:
+            log.info('[vim-local-history] Local history disabled')
         return
 
     global _local_history_state
@@ -281,8 +294,15 @@ async def local_history_toggle(settings: Settings) -> None:
             return None
         else:
             current_buffer = get_current_buffer()
+            current_file_path = async_call(partial(get_buffer_name, current_buffer))
+
             if not _is_buffer_valid(current_buffer):
                 log.info('[vim-local-history] Current buffer is not a valid target for vim-local-history')
+                return None
+
+            if settings.enabled == LocalHistoryEnabled.WORKSPACE and not is_in_workspace(current_file_path):
+                if settings.show_info_messages:
+                    log.info('[vim-local-history] Local history disabled for files which not in the current workspace')
                 return None
 
             buffer = create_buffer(
