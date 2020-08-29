@@ -3,6 +3,7 @@ from pynvim.api.buffer import Buffer
 from pynvim.api.window import Window
 from collections import OrderedDict
 from dataclasses import dataclass
+from enum import Enum
 from typing import Optional, Iterator, Tuple, Sequence, Any
 from functools import partial
 from .graph_log import build_graph_log
@@ -43,6 +44,13 @@ from .nvim import (
 _LOCAL_HISTORY_FILE_TYPE = 'LocalHistory'
 
 _LOCAL_HISTORY_PREVIEW_FILE_TYPE = 'LocalHistoryPreview'
+
+
+class MoveDirection(Enum):
+    OLDER = 1
+    OLDEST = 2
+    NEWER = 3
+    NEWEST = 4
 
 
 @dataclass(frozen=True)
@@ -157,7 +165,7 @@ async def local_history_delete(settings: Settings) -> None:
     await async_call(_render_local_history_preview)
 
 
-async def local_history_move(settings: Settings, direction: int) -> None:
+async def local_history_move(settings: Settings, direction: MoveDirection) -> None:
 
     def _local_history_move() -> None:
         window = get_current_window()
@@ -165,7 +173,14 @@ async def local_history_move(settings: Settings, direction: int) -> None:
         row, _ = get_current_cursor(window)
         line_count = get_line_count(buffer)
 
-        new_row = row + direction * 2
+        if direction == MoveDirection.NEWER:
+            new_row = row - 2
+        elif direction == MoveDirection.OLDER:
+            new_row = row + 2
+        elif direction == MoveDirection.NEWEST:
+            new_row = 1
+        elif direction == MoveDirection.OLDEST:
+            new_row = line_count
 
         if new_row < 1:
             new_row = 1
@@ -173,12 +188,16 @@ async def local_history_move(settings: Settings, direction: int) -> None:
             new_row = line_count
 
         new_row_line = get_line(buffer, new_row)
-        if not new_row_line:
+        if new_row_line is None:
             return
 
         if new_row_line[0] == '|':
             # If we're in between two nodes
-            new_row = new_row - direction
+            if direction == MoveDirection.NEWER:
+                new_row = new_row + 1
+            elif direction == MoveDirection.OLDER:
+                new_row = new_row - 1
+
         set_cursor(window, (new_row, 0))
 
     await async_call(_local_history_move)

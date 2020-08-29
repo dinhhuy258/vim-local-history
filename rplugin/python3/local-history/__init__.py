@@ -16,6 +16,7 @@ from .local_history import (
     local_history_resize,
     local_history_preview_resize,
     local_history_delete,
+    MoveDirection,
 )
 
 
@@ -73,11 +74,19 @@ class LocalHistoryPlugin(object):
 
     @function('LocalHistory_move_older')
     def move_older(self, args: Sequence[Any]) -> None:
-        self._run(local_history_move, 1)
+        self._run(local_history_move, MoveDirection.OLDER)
+
+    @function('LocalHistory_move_oldest')
+    def move_oldest(self, args: Sequence[Any]) -> None:
+        self._run(local_history_move, MoveDirection.OLDEST)
 
     @function('LocalHistory_move_newer')
     def move_newer(self, args: Sequence[Any]) -> None:
-        self._run(local_history_move, -1)
+        self._run(local_history_move, MoveDirection.NEWER)
+
+    @function('LocalHistory_move_newest')
+    def move_newest(self, args: Sequence[Any]) -> None:
+        self._run(local_history_move, MoveDirection.NEWEST)
 
     @function('LocalHistory_bigger')
     def bigger(self, args: Sequence[Any]) -> None:
