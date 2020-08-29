@@ -35,6 +35,7 @@ from .nvim import (
     set_width,
     get_height,
     set_height,
+    confirm,
     WindowLayout,
 )
 
@@ -115,6 +116,32 @@ def _get_local_history_target() -> Optional[int]:
         return int(matches.group(1))
 
     return None
+
+
+async def local_history_delete(settings: Settings) -> None:
+    target = await async_call(_get_local_history_target)
+    if _current_buffer is None or target is None:
+        return
+
+    ans = await async_call(partial(confirm, "Do you want to delete this change?"))
+    if ans == False:
+        return
+
+    current_file_path = await async_call(partial(get_buffer_name, _current_buffer))
+    local_history_storage = LocalHistoryStorage(settings, current_file_path)
+    change = _local_history_changes[target]
+    await run_in_executor(partial(local_history_storage.delete_record, change.change_id))
+
+    index = target
+    while _local_history_changes.get(index + 1) is not None:
+        _local_history_changes[index] = _local_history_changes[index + 1]
+        index = index + 1
+    _local_history_changes.pop(index)
+
+    graph = await run_in_executor(partial(build_graph_log, _local_history_changes))
+
+    await async_call(partial(_render_local_history_tree, graph))
+    await async_call(_render_local_history_preview)
 
 
 async def local_history_move(settings: Settings, direction: int) -> None:

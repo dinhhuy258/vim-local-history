@@ -26,6 +26,7 @@ class LocalHistoryRecord:
     record_id: int
     timestamp: float
     content: bytes
+    previous_record_id: int
     next_record_id: int
 
 
@@ -57,6 +58,40 @@ class LocalHistoryStorage:
                                          timestamp=record.timestamp,
                                          content=decompress(record.content).splitlines())
 
+    def delete_record(self, record_id: int) -> None:
+        with shelve.open(self._local_history_file_path) as local_history_file:
+            header = local_history_file.get(_LOCAL_HISTORY_HEADER)
+            if header is None or header.num_records == _LOCAL_HISTORY_NO_RECORD:
+                return
+
+            to_be_deleted_record = local_history_file.get(str(record_id))
+            if to_be_deleted_record is None:
+                return
+
+            previous_record_id = to_be_deleted_record.previous_record_id
+            next_record_id = to_be_deleted_record.next_record_id
+
+            del local_history_file[str(record_id)]
+
+            header.num_records = header.num_records - 1
+            if header.first_record_id == record_id:
+                header.first_record_id = next_record_id
+
+            if header.last_record_id == record_id:
+                header.last_record_id = previous_record_id
+
+            local_history_file[_LOCAL_HISTORY_HEADER] = header
+
+            if previous_record_id != _LOCAL_HISTORY_NO_RECORD:
+                previous_record = local_history_file.get(str(previous_record_id))
+                previous_record.next_record_id = next_record_id
+                local_history_file[str(previous_record_id)] = previous_record
+
+            if next_record_id != _LOCAL_HISTORY_NO_RECORD:
+                next_record = local_history_file.get(str(next_record_id))
+                next_record.previous_record_id = previous_record_id
+                local_history_file[str(next_record_id)] = next_record
+
     def save_record(self) -> None:
         content = get_file_content(self._file_path)
         if not content:
@@ -69,13 +104,14 @@ class LocalHistoryStorage:
                 header = LocalHistoryRecordHeader(_LOCAL_HISTORY_NO_RECORD, _LOCAL_HISTORY_NO_RECORD,
                                                   _LOCAL_HISTORY_NO_RECORD)
 
-            # Reduce the content size
+            # Compress the content to reduce the size before saving
             compressionContent = compress(content)
 
             if header.last_record_id == _LOCAL_HISTORY_NO_RECORD:
                 # Store patch and header
                 local_history_record = LocalHistoryRecord(_LOCAL_HISTORY_FIRST_RECORD_ID, current_timestamp,
-                                                          compressionContent, _LOCAL_HISTORY_NO_RECORD)
+                                                          compressionContent, _LOCAL_HISTORY_NO_RECORD,
+                                                          _LOCAL_HISTORY_NO_RECORD)
                 local_history_file[str(local_history_record.record_id)] = local_history_record
 
                 header.num_records = 1
@@ -95,7 +131,7 @@ class LocalHistoryStorage:
 
             # Store patch
             local_history_record = LocalHistoryRecord(header.last_record_id + 1, current_timestamp, compressionContent,
-                                                      _LOCAL_HISTORY_NO_RECORD)
+                                                      header.last_record_id, _LOCAL_HISTORY_NO_RECORD)
             local_history_file[str(local_history_record.record_id)] = local_history_record
 
             # Update the last record
@@ -111,6 +147,12 @@ class LocalHistoryStorage:
                 first_record = local_history_file[str(header.first_record_id)]
                 new_first_record_id = first_record.record_id
                 del local_history_file[str(header.first_record_id)]
+
+                # Update previous record for the new first record
+                new_first_record = local_history_file[str(new_first_record)]
+                new_first_record.previous_record_id = _LOCAL_HISTORY_NO_RECORD
+                local_history_file[str(new_first_record)] = new_first_record
+
                 # Update new first record into the header
                 header.first_record_id = new_first_record_id
 

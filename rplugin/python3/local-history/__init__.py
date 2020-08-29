@@ -15,6 +15,7 @@ from .local_history import (
     local_history_revert,
     local_history_resize,
     local_history_preview_resize,
+    local_history_delete,
 )
 
 
@@ -65,6 +66,10 @@ class LocalHistoryPlugin(object):
     @function('LocalHistory_revert')
     def revert(self, args: Sequence[Any]) -> None:
         self._run(local_history_revert)
+
+    @function('LocalHistory_delete')
+    def delete(self, args: Sequence[Any]) -> None:
+        self._run(local_history_delete)
 
     @function('LocalHistory_move_older')
     def move_older(self, args: Sequence[Any]) -> None:

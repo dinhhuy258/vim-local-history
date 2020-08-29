@@ -21,6 +21,7 @@ _DEFAULT_LOCAL_HISTORY_MAPPINGS = {
     'revert': ['<CR>'],
     'bigger': ['+', '='],
     'smaller': ['-', '_'],
+    'delete': ['d']
 }
 
 _DEFAULT_LOCAL_HISTORY_PREVIEW_MAPPINGS = {

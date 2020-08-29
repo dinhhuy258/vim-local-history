@@ -53,6 +53,10 @@ def async_call(func: Callable[[], T]) -> Awaitable[T]:
     return future
 
 
+def confirm(question: str) -> bool:
+    return _nvim.funcs.confirm(question, "&Yes\n&No", 2) == 1
+
+
 def get_current_window() -> None:
     return _nvim.api.get_current_win()
 
