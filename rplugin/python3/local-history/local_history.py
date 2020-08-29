@@ -271,7 +271,7 @@ async def local_history_toggle(settings: Settings) -> None:
             set_buffer_in_window(window, buffer)
 
             preview_buffer = create_buffer(
-                settings.local_history_preview_mappings, {
+                dict(), {
                     'buftype': 'nofile',
                     'bufhidden': 'hide',
                     'swapfile': False,

@@ -19,14 +19,11 @@ _DEFAULT_LOCAL_HISTORY_MAPPINGS = {
     'move_older': ['j'],
     'move_newer': ['k'],
     'revert': ['<CR>'],
-    'bigger': ['+', '='],
-    'smaller': ['-', '_'],
-    'delete': ['d']
-}
-
-_DEFAULT_LOCAL_HISTORY_PREVIEW_MAPPINGS = {
-    'bigger': ['+', '='],
-    'smaller': ['-', '_'],
+    'delete': ['d'],
+    'bigger': ['L'],
+    'smaller': ['H'],
+    'preview_bigger': ['K'],
+    'preview_smaller': ['J'],
 }
 
 
@@ -38,7 +35,6 @@ class Settings:
     local_history_width: int
     local_history_preview_height: int
     local_history_mappings: Dict
-    local_history_preview_mappings: Dict
 
 
 def load_settings() -> Settings:
@@ -55,16 +51,10 @@ def load_settings() -> Settings:
     local_history_mappings = {
         f"LocalHistory_{function}": mappings for function, mappings in local_history_mappings.items()
     }
-    local_history_preview_mappings = get_global_var(
-        'local_history_preview_mappings') or _DEFAULT_LOCAL_HISTORY_PREVIEW_MAPPINGS
-    local_history_preview_mappings = {
-        f"LocalHistoryPreview_{function}": mappings for function, mappings in local_history_preview_mappings.items()
-    }
 
     return Settings(local_history_path=local_history_path,
                     local_history_max_display=local_history_max_display,
                     local_history_save_delay=local_history_save_delay,
                     local_history_width=local_history_width,
                     local_history_preview_height=local_history_preview_height,
-                    local_history_mappings=local_history_mappings,
-                    local_history_preview_mappings=local_history_preview_mappings)
+                    local_history_mappings=local_history_mappings)
