@@ -19,13 +19,15 @@ _DEFAULT_LOCAL_HISTORY_PATH = '.local_history'
 
 _DEFAULT_LOCAL_HISTORY_SHOW_INFO_MESSAGES = True
 
-_DEFAULT_LOCAL_HISTORY_MAX_DISPLAY = 50
+_DEFAULT_LOCAL_HISTORY_MAX_CHANGES = 100
 
-_DEFAULT_LOCAL_HISTORY_SAVE_DELAY = 300
+_DEFAULT_LOCAL_HISTORY_NEW_CHANGE_DELAY = 300
 
 _DEFAULT_LOCAL_HISTORY_WIDTH = 45
 
 _DEFAULT_LOCAL_HISTORY_PREVIEW_HEIGHT = 15
+
+_DEFAULT_LOCAL_HISTORY_EXCLUDE = []
 
 _DEFAULT_LOCAL_HISTORY_MAPPINGS = {
     'quit': ['q'],
@@ -47,10 +49,11 @@ class Settings:
     enabled: LocalHistoryEnabled
     path: str
     show_info_messages: bool
-    max_display: int
-    save_delay: int
+    max_changes: int
+    new_change_delay: int
     width: int
     preview_height: int
+    exclude: list
     mappings: Dict
 
 
@@ -68,21 +71,23 @@ async def load_settings() -> Settings:
 
     show_info_messages = await async_call(
         partial(get_global_var, 'local_history_show_info_messages', _DEFAULT_LOCAL_HISTORY_SHOW_INFO_MESSAGES))
-    max_display = await async_call(
-        partial(get_global_var, 'local_history_max_display', _DEFAULT_LOCAL_HISTORY_MAX_DISPLAY))
-    save_delay = await async_call(partial(get_global_var, 'local_history_save_delay',
-                                          _DEFAULT_LOCAL_HISTORY_SAVE_DELAY))
+    max_changes = await async_call(
+        partial(get_global_var, 'local_history_max_changes', _DEFAULT_LOCAL_HISTORY_MAX_CHANGES))
+    new_change_delay = await async_call(
+        partial(get_global_var, 'local_history_new_change_delay', _DEFAULT_LOCAL_HISTORY_NEW_CHANGE_DELAY))
     width = await async_call(partial(get_global_var, 'local_history_width', _DEFAULT_LOCAL_HISTORY_WIDTH))
     preview_height = await async_call(
         partial(get_global_var, 'local_history_preview_height', _DEFAULT_LOCAL_HISTORY_PREVIEW_HEIGHT))
+    exclude = await async_call(partial(get_global_var, 'local_history_exclude', _DEFAULT_LOCAL_HISTORY_EXCLUDE))
     mappings = await async_call(partial(get_global_var, 'local_history_mappings', _DEFAULT_LOCAL_HISTORY_MAPPINGS))
     mappings = {f"LocalHistory_{function}": mappings for function, mappings in mappings.items()}
 
     return Settings(enabled=enabled,
                     path=path,
                     show_info_messages=show_info_messages,
-                    max_display=max(1, max_display),
-                    save_delay=max(0, save_delay),
+                    max_changes=max(1, max_changes),
+                    new_change_delay=max(0, new_change_delay),
                     width=max(1, width),
                     preview_height=max(1, preview_height),
+                    exclude=exclude,
                     mappings=mappings)

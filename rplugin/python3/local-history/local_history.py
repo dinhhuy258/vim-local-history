@@ -1,4 +1,5 @@
 import re
+import fnmatch
 from pynvim.api.buffer import Buffer
 from pynvim.api.window import Window
 from collections import OrderedDict
@@ -75,6 +76,13 @@ def _find_local_history_windows_in_tab() -> Iterator[Window]:
         buffer_file_type = get_buffer_option(buffer, 'filetype')
         if _is_local_history_buffer(buffer):
             yield window
+
+
+def _is_excluded_file(file_path: str, exclude: list) -> bool:
+    for exclude_pattern in exclude:
+        if fnmatch.fnmatch(file_path, exclude_pattern):
+            return True
+    return False
 
 
 def _is_buffer_valid(buffer: Buffer) -> str:
@@ -267,6 +275,10 @@ async def local_history_save(settings: Settings, file_path: str) -> None:
         if settings.show_info_messages:
             log.info('[vim-local-history] Local history disabled for files which not in the current workspace')
         return
+    if _is_excluded_file(file_path, settings.exclude):
+        if settings.show_info_messages:
+            log.info('[vim-local-history] The file is in exclude list')
+        return
 
     await run_in_executor(partial(create_folder_if_not_present, settings.path))
 
@@ -299,10 +311,13 @@ async def local_history_toggle(settings: Settings) -> None:
             if not _is_buffer_valid(current_buffer):
                 log.info('[vim-local-history] Current buffer is not a valid target for vim-local-history')
                 return None
-
             if settings.enabled == LocalHistoryEnabled.WORKSPACE and not is_in_workspace(current_file_path):
                 if settings.show_info_messages:
                     log.info('[vim-local-history] Local history disabled for files which not in the current workspace')
+                return None
+            if _is_excluded_file(current_file_path, settings.exclude):
+                if settings.show_info_messages:
+                    log.info('[vim-local-history] The file is in exclude list')
                 return None
 
             buffer = create_buffer(

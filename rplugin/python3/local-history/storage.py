@@ -125,7 +125,7 @@ class LocalHistoryStorage:
             if last_record.content == compression_content:
                 return
 
-            if current_timestamp - last_record.timestamp < self._settings.save_delay:
+            if current_timestamp - last_record.timestamp < self._settings.new_change_delay:
                 # Update the content of the last record in the case duration between current timestamp and timestamp of the last record is less than save delay
                 last_record.content = compression_content
                 # FIXME: Should we update the timestamp value?
@@ -145,7 +145,7 @@ class LocalHistoryStorage:
             header.num_records = header.num_records + 1
             header.last_record_id = local_history_record.record_id
 
-            while header.num_records > self._settings.max_display:
+            while header.num_records > self._settings.max_changes:
                 # Remove the first_record
                 first_record = local_history_file[str(header.first_record_id)]
                 new_first_record_id = first_record.next_record_id
