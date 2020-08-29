@@ -252,7 +252,8 @@ async def local_history_save(settings: Settings, file_path: str) -> None:
 
     local_history_storage = LocalHistoryStorage(settings, file_path)
     await run_in_executor(partial(local_history_storage.save_record))
-    log.info('Save patch done!!!')
+    if settings.local_history_show_messages:
+        log.info('[vim-local-history] Save done')
 
 
 async def local_history_toggle(settings: Settings) -> None:
