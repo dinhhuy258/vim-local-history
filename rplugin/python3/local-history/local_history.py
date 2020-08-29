@@ -1,5 +1,6 @@
 import re
 import fnmatch
+import tempfile
 from pynvim.api.buffer import Buffer
 from pynvim.api.window import Window
 from collections import OrderedDict
@@ -20,6 +21,7 @@ from .utils import (
 from .nvim import (
     async_call,
     call_atomic,
+    command,
     create_buffer,
     create_window,
     close_window,
@@ -154,6 +156,26 @@ def _get_local_history_target() -> Optional[int]:
     return None
 
 
+async def local_history_diff(settings: Settings) -> None:
+    target = await async_call(_get_local_history_target)
+    if target is None or _local_history_state is None:
+        return
+
+    def _go_to_preview_window() -> None:
+        window, _ = find_window_and_buffer_by_file_type(_LOCAL_HISTORY_PREVIEW_FILE_TYPE)
+        set_current_window(window)
+
+    await async_call(_go_to_preview_window)
+
+    (_, filename) = tempfile.mkstemp()
+    await async_call(partial(command, 'silent! w %s' % (filename)))
+
+    await async_call(_close_local_history_windows)
+
+    await async_call(partial(command, 'silent! keepalt vert diffpatch %s' % (filename)))
+    await async_call(partial(command, 'set buftype=nofile bufhidden=delete'))
+
+
 async def local_history_delete(settings: Settings) -> None:
     target = await async_call(_get_local_history_target)
     if _local_history_state is None or target is None:
@@ -267,6 +289,9 @@ async def local_history_revert(settings: Settings) -> None:
 
 
 async def local_history_save(settings: Settings, file_path: str) -> None:
+    if not file_path:
+        # Temp file
+        return
     if settings.enabled == LocalHistoryEnabled.NEVER:
         if settings.show_info_messages:
             log.info('[vim-local-history] Local history disabled')

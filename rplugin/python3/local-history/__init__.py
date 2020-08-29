@@ -16,6 +16,7 @@ from .local_history import (
     local_history_resize,
     local_history_preview_resize,
     local_history_delete,
+    local_history_diff,
     MoveDirection,
 )
 
@@ -105,3 +106,7 @@ class LocalHistoryPlugin(object):
     @function('LocalHistory_preview_smaller')
     def preview_smaller(self, args: Sequence[Any]) -> None:
         self._run(local_history_preview_resize, -2)
+
+    @function('LocalHistory_diff')
+    def diff(self, args: Sequence[Any]) -> None:
+        self._run(local_history_diff)

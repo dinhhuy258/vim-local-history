@@ -36,6 +36,7 @@ _DEFAULT_LOCAL_HISTORY_MAPPINGS = {
     'move_oldest': ['G'],
     'move_newest': ['gg'],
     'revert': ['<CR>'],
+    'diff': ['r'],
     'delete': ['d'],
     'bigger': ['L'],
     'smaller': ['H'],
