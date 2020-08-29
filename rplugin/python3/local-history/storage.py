@@ -42,8 +42,7 @@ class LocalHistoryStorage:
     def __init__(self, settings: Settings, file_path: str) -> None:
         self._settings = settings
         self._file_path = file_path
-        self._local_history_file_path = path.join(settings.local_history_path,
-                                                  self._get_local_history_file_name(file_path))
+        self._local_history_file_path = path.join(settings.path, self._get_local_history_file_name(file_path))
 
     def get_changes(self) -> Iterator[LocalHistoryChange]:
         with shelve.open(self._local_history_file_path) as local_history_file:
@@ -126,7 +125,7 @@ class LocalHistoryStorage:
             if last_record.content == compression_content:
                 return
 
-            if current_timestamp - last_record.timestamp < self._settings.local_history_save_delay:
+            if current_timestamp - last_record.timestamp < self._settings.save_delay:
                 # Update the content of the last record in the case duration between current timestamp and timestamp of the last record is less than save delay
                 last_record.content = compression_content
                 # FIXME: Should we update the timestamp value?
@@ -146,7 +145,7 @@ class LocalHistoryStorage:
             header.num_records = header.num_records + 1
             header.last_record_id = local_history_record.record_id
 
-            while header.num_records > self._settings.local_history_max_display:
+            while header.num_records > self._settings.max_display:
                 # Remove the first_record
                 first_record = local_history_file[str(header.first_record_id)]
                 new_first_record_id = first_record.next_record_id

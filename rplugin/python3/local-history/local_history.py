@@ -254,19 +254,19 @@ async def local_history_revert(settings: Settings) -> None:
 
 
 async def local_history_save(settings: Settings, file_path: str) -> None:
-    if settings.local_history_disable:
+    if settings.disable:
         return
 
-    await run_in_executor(partial(create_folder_if_not_present, settings.local_history_path))
+    await run_in_executor(partial(create_folder_if_not_present, settings.path))
 
     local_history_storage = LocalHistoryStorage(settings, file_path)
     await run_in_executor(partial(local_history_storage.save_record))
-    if settings.local_history_show_messages:
+    if settings.show_info_messages:
         log.info('[vim-local-history] Save done')
 
 
 async def local_history_toggle(settings: Settings) -> None:
-    if settings.local_history_disable:
+    if settings.disable:
         return
 
     global _local_history_state
@@ -286,7 +286,7 @@ async def local_history_toggle(settings: Settings) -> None:
                 return None
 
             buffer = create_buffer(
-                settings.local_history_mappings, {
+                settings.mappings, {
                     'buftype': 'nofile',
                     'bufhidden': 'hide',
                     'swapfile': False,
@@ -294,7 +294,7 @@ async def local_history_toggle(settings: Settings) -> None:
                     'modifiable': False,
                     'filetype': _LOCAL_HISTORY_FILE_TYPE,
                 })
-            window = create_window(settings.local_history_width, WindowLayout.LEFT, {
+            window = create_window(settings.width, WindowLayout.LEFT, {
                 'list': False,
                 'number': False,
                 'relativenumber': False,
@@ -312,7 +312,7 @@ async def local_history_toggle(settings: Settings) -> None:
                     'filetype': _LOCAL_HISTORY_PREVIEW_FILE_TYPE,
                     'syntax': 'diff',
                 })
-            preview_window = create_window(settings.local_history_preview_height, WindowLayout.BELOW, {
+            preview_window = create_window(settings.preview_height, WindowLayout.BELOW, {
                 'number': False,
                 'relativenumber': False,
                 'wrap': False,
