@@ -1,8 +1,6 @@
 import time
 from collections import OrderedDict
 
-_AGE_SCALES = [("day", 3600 * 24), ("hour", 3600), ("minute", 60)]
-
 
 def build_graph_log(changes: OrderedDict) -> list:
     lines = []
@@ -22,12 +20,16 @@ def _calculate_age(timestamp: float) -> str:
         return "%d %s" % (int(c), t if c == 1 else t + "s")
 
     delta = max(1, int(time.time() - int(timestamp)))
-    if delta > _AGE_SCALES[0][1] * 2:
+    if delta > 3600 * 24:
         return time.strftime('%d-%m-%Y %H:%M', time.gmtime(float(timestamp)))
 
-    for t, s in _AGE_SCALES:
-        n = delta // s
-        if n >= 2 or s == 1:
-            return '%s ago' % format(t, n)
+    h = delta // 3600  # 1 hour = 3600 seconds
+    if h >= 1:
+        m = (delta % 3600) // 60
+        return '%s%s ago' % (format('hour', h), '' if m == 0 else ' ' + format('minute', m))
 
-    return "<1 min ago"
+    m = delta // 60  # 1 minute = 60 seconds
+    if m >= 2:
+        return '%s ago' % format('minute', m)
+
+    return '< 1 min ago'
