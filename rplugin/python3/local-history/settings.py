@@ -15,7 +15,7 @@ class LocalHistoryEnabled(Enum):
 
 _DEFAULT_LOCAL_HISTORY_ENABLED = LocalHistoryEnabled.ALWAYS.value
 
-_DEFAULT_LOCAL_HISTORY_PATH = '.local_history'
+_DEFAULT_LOCAL_HISTORY_PATH = '.local-history'
 
 _DEFAULT_LOCAL_HISTORY_SHOW_INFO_MESSAGES = True
 
