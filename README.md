@@ -14,7 +14,7 @@ Every time you save a file, a copy of the saved contents is kept in the local hi
 
 ## Install
 
-Install pynvim 
+Install pynvim
 
 ```sh
 pip3 install pynvim
@@ -94,9 +94,9 @@ Default: `.local-history`
 
 ### g:local_history_show_info_messages
 
-Enable info message. If you find the vim-local-history message is annoying, then set it off.
+Enable info message. If you find the vim-local-history message is annoying, then set it off. This configuration is used for development purposes.
 
-Default: `v:true`
+Default: `v:false`
 
 ### g:local_history_max_changes
 
@@ -150,7 +150,7 @@ Default: See the table above
 
 ## Preview
 
-Toggle local history 
+Toggle local history
 
 ![](https://user-images.githubusercontent.com/17776979/91652188-d36c5700-eabe-11ea-93ab-1ea37be9aa5b.gif)
 
