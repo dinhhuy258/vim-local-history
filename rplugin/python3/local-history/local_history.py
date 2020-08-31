@@ -391,6 +391,7 @@ async def local_history_toggle(settings: Settings) -> None:
 
     current_file_path = await async_call(partial(get_buffer_name, current_buffer))
 
+    await run_in_executor(partial(create_folder_if_not_present, settings.path))
     local_history_storage = LocalHistoryStorage(settings, current_file_path)
     changes = await run_in_executor(partial(local_history_storage.get_changes))
     local_history_changes = OrderedDict()
