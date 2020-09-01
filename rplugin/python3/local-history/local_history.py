@@ -331,7 +331,7 @@ async def local_history_toggle(settings: Settings) -> None:
             return None
         else:
             current_buffer = get_current_buffer()
-            current_file_path = async_call(partial(get_buffer_name, current_buffer))
+            current_file_path = get_buffer_name(current_buffer)
 
             if not _is_buffer_valid(current_buffer):
                 log.info('[vim-local-history] Current buffer is not a valid target for vim-local-history')
