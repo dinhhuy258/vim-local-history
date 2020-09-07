@@ -167,5 +167,5 @@ Show vertical diff
 
 ## Credits
 
-[Chadtree](https://github.com/ms-jpq/chadtree/) for setting up async python project.
-[vim-mundo](https://github.com/simnalamburt/vim-mundo) 
+- [Chadtree](https://github.com/ms-jpq/chadtree/) for setting up async python project.
+- [vim-mundo](https://github.com/simnalamburt/vim-mundo) 
