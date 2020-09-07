@@ -43,8 +43,7 @@ If the error still occurs, run the following command
 pip install --user --upgrade pynvim
 ```
 
-then restart nvim and re-run `:UpdateRemotePlugins` and finally restart nvim, `:UpdateRemotePlugins` will exist
-
+then restart nvim and re-run `:UpdateRemotePlugins` and finally restart nvim, `:LocalHistoryToggle` will exist
 
 ## Key bindings
 
@@ -165,3 +164,8 @@ Revert local history change
 Show vertical diff
 
 ![](https://user-images.githubusercontent.com/17776979/91652193-de26ec00-eabe-11ea-8291-2fee515ed6a5.gif)
+
+## Credits
+
+[Chadtree](https://github.com/ms-jpq/chadtree/) for setting up async python project.
+[vim-mundo](https://github.com/simnalamburt/vim-mundo) 
