@@ -1,9 +1,9 @@
-import threading
+import os
 from pynvim import Nvim, plugin, command, autocmd, function
 from asyncio import AbstractEventLoop, Lock, run_coroutine_threadsafe
 from typing import Any, Awaitable, Callable, Optional, Sequence
 
-from .nvim import init_nvim
+from .nvim import init_nvim, get_global_var
 from .logging import log, init_log
 from .settings import load_settings
 from .executor_service import ExecutorService
@@ -31,6 +31,8 @@ class LocalHistoryPlugin(object):
         init_nvim(self._nvim)
         init_log(self._nvim)
         self._settings = None
+        local_history_workspace = get_global_var('local_history_workspace', os.getcwd())
+        os.chdir(local_history_workspace)
 
     def _submit(self, coro: Awaitable[None]) -> None:
         loop: AbstractEventLoop = self._nvim.loop
